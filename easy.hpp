@@ -1,16 +1,17 @@
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 #ifndef _LEETCODE_PROBLEMS_EASY_H_
 #define _LEETCODE_PROBLEMS_EASY_H_
 
 using namespace std;
 
-class PrintVector {
+class PrintData {
 public:
     static void print(vector<int> vec) {
-        uint32_t count = vec.size();
-        printf("\ninput vector size:%d \n", count);
+        size_t count = vec.size();
+        printf("\ninput vector size:%zd \n", count);
         printf("[ ");
         for (uint32_t i = 0; i < count; i++) {
             printf("%5d  ", vec[i]);
@@ -19,8 +20,8 @@ public:
     }
 
     static void print(vector<int> vec, uint32_t printCount) {
-        uint32_t vectorCount = vec.size();
-        printf("\noutput vector size:%d, printf size:%d \n", vectorCount, printCount);
+        size_t vectorCount = vec.size();
+        printf("\noutput vector size:%zd, printf size:%d \n", vectorCount, printCount);
         printf("[ ");
         for (uint32_t i = 0; i < vectorCount && i < printCount; i++) {
             printf("%5d  ", vec[i]);
@@ -46,7 +47,7 @@ public:
     vector<int> twoSum(vector<int>& nums, int target) {
         vector<int> result;
         result.reserve(2);
-        uint32_t count = nums.size();
+        size_t count = nums.size();
         if (count <= 1) {
             return result;
         }
@@ -62,7 +63,7 @@ public:
                 }
             }
         }
-        PrintVector::print(result);
+        PrintData::print(result);
         return result;
     }
 };
@@ -134,7 +135,7 @@ public:
         vector<int> result = digits;
         uint32_t addend = 1;
 
-        for (int32_t i = digits.size() - 1; i >= 0; i--) {
+        for (int32_t i = (int32_t)digits.size() - 1; i >= 0; i--) {
             if (1 == addend) {
                 if (result[i] + addend > 9) {
                     result[i] = 0;
@@ -151,8 +152,8 @@ public:
                 }
             }
         }
-        PrintVector::print(digits);
-        PrintVector::print(result);
+        PrintData::print(digits);
+        PrintData::print(result);
         return result;
     }
 };
@@ -242,7 +243,7 @@ class LastWord {
 public:
     int lengthOfLastWord(string s) {
         uint32_t index = 0;
-        uint32_t strLen = s.length();
+        size_t strLen = s.length();
         uint32_t wordLen = 0;
         bool detectSpace = false;
 
@@ -291,7 +292,7 @@ public:
         uint32_t backupIndex = 0;
         uint32_t seekIndex = 1;
 
-        PrintVector::print(nums);
+        PrintData::print(nums);
 
         if (0 == nums.size()) {
             return 0;
@@ -304,7 +305,7 @@ public:
             }
         }
 
-        PrintVector::print(nums, backupIndex + 1);
+        PrintData::print(nums, backupIndex + 1);
         printf("vector remove duplicates remian:%d \n", backupIndex + 1);
         return backupIndex + 1;
     }
@@ -330,11 +331,11 @@ public:
         char c2;
         if (1 == strs.size()) {
             result = strs[0];
-            printf("longest common prefix:%s, Length:%d \n", result.c_str(), result.size());
+            printf("longest common prefix:%s, Length:%zd \n", result.c_str(), result.size());
             return result;
         }
-        for (uint32_t charIdx = 0; ; charIdx++) {
-            for (uint32_t strIdx = 0; strIdx < strs.size() - 1; strIdx++) {
+        for (size_t charIdx = 0; ; charIdx++) {
+            for (size_t strIdx = 0; strIdx < strs.size() - 1; strIdx++) {
                 if (charIdx < strs[strIdx].size() && charIdx < strs[strIdx + 1].size()) {
                     c1 = strs[strIdx].at(charIdx);
                     c2 = strs[strIdx + 1].at(charIdx);
@@ -348,13 +349,13 @@ public:
                 }
             }
             if (samePrefix) {
-                printf("insert char:%c at index:%d into str size:%d\n", c1, charIdx, result.size());
+                printf("insert char:%c at index:%zd into str size:%zd\n", c1, charIdx, result.size());
                 result.push_back(c1);
             } else {
                 break;
             }
         }
-        printf("longest common prefix:%s, Length:%d \n", result.c_str(), result.size());
+        printf("longest common prefix:%s, Length:%zd \n", result.c_str(), result.size());
         return result;
     }
 };

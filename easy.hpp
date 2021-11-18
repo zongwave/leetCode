@@ -425,7 +425,48 @@ public:
 class SingleNumber {
 public:
     int singleNumber(vector<int>& nums) {
+        int base_idx = 0;
+        int seek_idx = 1;
 
+        PrintData::print(nums);
+        vector<bool> singleMark;
+        singleMark.resize(nums.size());
+        for (size_t i = 0; i < singleMark.size(); i++) {
+            singleMark[i] = true;
+        }
+
+        for (base_idx = 0; base_idx < nums.size() - 1; base_idx++) {
+            for (seek_idx = base_idx + 1; seek_idx < nums.size(); seek_idx++) {
+                if (singleMark[base_idx] == false) {
+                    continue;
+                }
+                if (nums[base_idx] == nums[seek_idx]) {
+                    singleMark[base_idx] = false;
+                    singleMark[seek_idx] = false;
+                    break;
+                }
+            }
+        }
+
+        for (size_t i = 0; i < singleMark.size(); i++) {
+            if (singleMark[i] == true) {
+                printf("found single number:%d at index:%zd \n", nums[i], i);
+                return nums[i];
+            }
+        }
+        return 0;
+    }
+
+    int singleNumberXor(vector<int>& nums) {
+        int X = 0;
+
+        for (auto num : nums) {
+            X ^= num;
+        }
+
+        printf("found single number:%d  \n", X);
+
+        return X;
     }
 };
 

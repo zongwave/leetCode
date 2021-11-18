@@ -470,5 +470,75 @@ public:
     }
 };
 
+/* 27. Remove Element
+*
+    Given an integer array nums and an integer val, remove all occurrences of val in nums in-place.
+    The relative order of the elements may be changed.
+
+    Since it is impossible to change the length of the array in some languages,
+    you must instead have the result be placed in the first part of the array nums.
+    More formally, if there are k elements after removing the duplicates,
+    then the first k elements of nums should hold the final result.
+    It does not matter what you leave beyond the first k elements.
+
+    Return k after placing the final result in the first k slots of nums.
+
+    Do not allocate extra space for another array. You must do this by modifying the input array in-place with O(1) extra memory.
+
+    Constraints:
+        0 <= nums.length <= 100
+        0 <= nums[i] <= 50
+        0 <= val <= 100
+*/
+class RemoveElement {
+public:
+    int removeElementEasy(vector<int>& nums, int val) {
+        PrintData::print(nums);
+
+        int pos = 0;
+        for (size_t idx = 0; idx < nums.size(); idx++) {
+            if (nums[idx] != val) {
+                nums[pos++] = nums[idx];
+            }
+        }
+        printf("remove element:%d, remain element number:%d \n", val, pos);
+        return pos;
+    }
+
+    int removeElement(vector<int>& nums, int val) {
+        uint32_t count = (uint32_t)nums.size();
+        if (count == 0) {
+            return 0;
+        }
+        int32_t front_idx = 0;
+        int32_t end_idx = count - 1;
+
+        PrintData::print(nums);
+
+        for (front_idx = 0; front_idx <= end_idx; front_idx++) {
+            if (nums[front_idx] == val) {
+                while (nums[end_idx] == val && end_idx > front_idx) {
+                    end_idx--;
+                }
+                if (end_idx == 0) {
+                    printf("remove element:%d, remain element number:0 \n", val);
+                    return 0;
+                }
+                nums[front_idx] = nums[end_idx];
+                end_idx--;
+            } else {
+                if (nums[end_idx] == val) {
+                    end_idx--;
+                }
+            }
+        }
+
+        printf("remove element:%d, remain element number:%d \n", val, end_idx + 1);
+        PrintData::print(nums);
+
+        return end_idx + 1;
+    }
+};
+
 #endif
 

@@ -7,6 +7,18 @@
 
 using namespace std;
 
+class CreateData {
+public:
+    static string str(const char c, uint32_t num) {
+        string result;
+        result.reserve(num);
+        for (uint32_t i = 0; i < num; i++) {
+            result.push_back(c);
+        }
+        return result;
+    }
+};
+
 class PrintData {
 public:
     static void print(vector<int> vec) {
@@ -537,6 +549,90 @@ public:
         PrintData::print(nums);
 
         return end_idx + 1;
+    }
+};
+
+/* 28. Implement strStr()
+*
+    Implement strStr().
+
+    Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+
+    Clarification:
+        What should we return when needle is an empty string? This is a great question to ask during an interview.
+        For the purpose of this problem, we will return 0 when needle is an empty string.
+        This is consistent to C's strstr() and Java's indexOf().
+
+    Constraints:
+        0 <= haystack.length, needle.length <= 5 * 104
+        haystack and needle consist of only lower-case English characters.
+*/
+class MystrStr {
+public:
+    int strStr(string haystack, string needle) {
+
+        if (needle.empty()) {
+            return 0;
+        }
+        if (haystack.size() < needle.size()) {
+            return -1;
+        }
+
+        printf("find needle str:%s from haystack str:%s \n", needle.c_str(), haystack.c_str());
+        string sword;
+        for (uint32_t idx = 0; idx < haystack.size(); idx++) {
+            sword = haystack.substr(idx, haystack.size() - idx);
+            if (0 == strncmp(needle.c_str(), sword.c_str(), needle.size())) {
+                printf("found needle at:%d \n", idx);
+                return idx;
+            }
+        }
+
+        printf("Could NOT found needle str:%s \n", needle.c_str());
+        return -1;
+    }
+
+    int strStrFast(string haystack, string needle) {
+
+        if (needle.empty()) {
+            return 0;
+        }
+        //printf("find needle str:%s from haystack str:%s \n", needle.c_str(), haystack.c_str());
+
+        int found = (int)haystack.find(needle.c_str());
+
+        if (found != std::string::npos) {
+            std::cout << "first 'needle' found at: " << found << '\n';
+            return found;
+        } else {
+            printf("Could NOT found needle str:%s \n", needle.c_str());
+            return -1;
+        }
+    }
+};
+
+/* 461. Hamming Distance
+*
+    The Hamming distance between two integers is the number of positions at which the corresponding bits are different.
+    Given two integers x and y, return the Hamming distance between them.
+
+    Constraints:
+        0 <= x, y <= 231 - 1
+*/
+class HammingDistance {
+public:
+    int hammingDistance(int x, int y) {
+        int z = x ^ y;
+        int result = 0;
+
+        while (z != 0) {
+            if (z & 0x01) {
+                result++;
+            }
+            z = z >> 1;
+        }
+        printf("x:%d, y:%d, hamming distance:%d \n", x, y, result);
+        return result;
     }
 };
 

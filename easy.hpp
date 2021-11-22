@@ -657,5 +657,28 @@ public:
     }
 };
 
+/* 190. Reverse Bits
+*     Reverse bits of a given 32 bits unsigned integer.
+*    
+*    Constraints:
+*        The input must be a binary string of length 32
+*/
+class ReverseBits {
+public:
+    uint32_t reverseBits(uint32_t n) {
+        uint32_t reverse = 0;
+        uint32_t bitIdx = 31;
+        uint32_t input = n;
+
+        while (n > 0) {
+            reverse |= (n & 0x01) << bitIdx;
+            n = n >> 1;
+            bitIdx--;
+        }
+        printf("ReverseBits input:0x%x, output:0x%x \n", input, reverse);
+        return reverse;
+    }
+};
+
 #endif
 

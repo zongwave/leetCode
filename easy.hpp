@@ -705,5 +705,101 @@ public:
     }
 };
 
+/* 70. Climbing Stairs
+*     You are climbing a staircase. It takes n steps to reach the top.
+*     Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
+*
+*     Constraints:
+*         1 <= n <= 45
+*/
+class ClimbStairs {
+public:
+    double factorial(int n) {
+        if (n <= 0) {
+            return 1;
+        }
+        if (n == 1) {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
+        }
+    }
+
+    double combination(int n, int m) {
+        if (n <= m || m == 0) {
+            return 1;
+        }
+
+        double pnm = n;
+        double pmm = n - m;
+        for (int i = 1; i < n - m; i++) {
+            pnm *= (n - i);
+            pmm *= (n - m - i);
+        }
+        return pnm / pmm;
+    }
+
+    double combination_recur(int n, int m) {
+        if (n <= m || m == 0) {
+            return 1;
+        }
+
+        double result = factorial (n) / (factorial(m) * factorial(n - m));
+
+        return result;
+    }
+
+    int fibonacci(int n) {
+        if (n <= 2) {
+            return 1;
+        } else {
+            int result = fibonacci(n - 1) + fibonacci(n - 2);
+            //printf("fibonacci %d, %d \n", n, result);
+            return result;
+        }
+    }
+
+    int climbStairsCombination(int n) {
+        if (n <= 0) {
+            return 0;
+        }
+
+        int min_digits = n / 2 + n % 2;
+        int max_digits = n;
+        double result = 0;
+
+        for (int i = min_digits; i <= max_digits; i++) {
+            result += combination(i, max_digits - i);
+        }
+
+        printf("ClimbStairs intput:%d, output:%d \n", n, (int)result);
+        return (int)result;
+    }
+
+    int climbStairs(int n) {
+        if (n <= 0) {
+            return 0;
+        }
+
+        int* fibonacciList = (int*)malloc((n + 1) * sizeof(int));
+        if (NULL == fibonacciList) {
+            return 0;
+        }
+
+        fibonacciList[0] = 1;
+        fibonacciList[1] = 1;
+
+        for (int i = 2; i <= n; i++) {
+            fibonacciList[i] = fibonacciList[i - 1] + fibonacciList[i - 2];
+        }
+
+        int result = fibonacciList[n];
+        free(fibonacciList);
+
+        printf("ClimbStairs intput:%d, output:%d \n", n, result);
+        return result;
+    }
+};
+
 #endif
 

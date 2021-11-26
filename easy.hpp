@@ -876,10 +876,53 @@ public:
                     row[idx] = triangle[num - 1][idx - 1] + triangle[num - 1][idx];
                 }
                 triangle[num] = row;
+
+                PrintData::print(row);
             }
         }
 
         return triangle;
+    }
+};
+
+/* 119. Pascal's Triangle II
+*
+*     Given an integer rowIndex, return the rowIndexth (0-indexed) row of the Pascal's triangle.
+*     In Pascal's triangle, each number is the sum of the two numbers directly above it as shown:
+*
+*     Example 1:
+*         Input: rowIndex = 3
+*         Output: [1,3,3,1]
+*
+*     Constraints:
+*         0 <= rowIndex <= 33
+*/
+class PascalTriangleRow {
+public:
+    vector<int> getRow(int rowIndex) {
+        vector<vector<int>> triangle;
+        triangle.resize(rowIndex + 1);
+
+        if (rowIndex < 1) {
+            PrintData::print({ 1 });
+            return { 1 };
+        }
+
+        triangle[0] = { 1 };
+        triangle[1] = { 1, 1 };
+
+        for (int i = 2; i <= rowIndex; i++) {
+            vector<int> row;
+            triangle[i].resize(i + 1);
+            triangle[i][0] = 1;
+            triangle[i][i] = 1;
+            for (int j = 1; j < i; j++) {
+                triangle[i][j] = triangle[i - 1][j - 1] + triangle[i - 1][j];
+            }
+        }
+
+        PrintData::print(triangle[rowIndex]);
+        return triangle[rowIndex];
     }
 };
 

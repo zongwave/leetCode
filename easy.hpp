@@ -44,15 +44,15 @@ public:
 
 /* 1. Two Sum
 *
-    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
-    You may assume that each input would have exactly one solution, and you may not use the same element twice.
-    You can return the answer in any order.
-
-    Constraints:
-        2 <= nums.length <= 104
-        -109 <= nums[i] <= 109
-        -109 <= target <= 109
-        Only one valid answer exists.
+*    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+*    You may assume that each input would have exactly one solution, and you may not use the same element twice.
+*    You can return the answer in any order.
+*
+*    Constraints:
+*        2 <= nums.length <= 104
+*        -109 <= nums[i] <= 109
+*        -109 <= target <= 109
+*        Only one valid answer exists.
 */
 class TwoSum {
 public:
@@ -82,20 +82,20 @@ public:
 
 /* 9. Palindrome Number
 *
-    Given an integer x, return true if x is palindrome integer.
-    An integer is a palindrome when it reads the same backward as forward.
-    For example, 121 is palindrome while 123 is not.
-
-    Example 1:
-        Input: x = 121
-        Output: true
-
-    Example 2:
-        Input: x = -121
-        Output: false
-        Explanation: From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome.
-
-    Constraints: -2^31 <= x <= 2^31 - 1
+*    Given an integer x, return true if x is palindrome integer.
+*    An integer is a palindrome when it reads the same backward as forward.
+*    For example, 121 is palindrome while 123 is not.
+*
+*    Example 1:
+*        Input: x = 121
+*        Output: true
+*
+*    Example 2:
+*        Input: x = -121
+*        Output: false
+*        Explanation: From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome.
+*
+*    Constraints: -2^31 <= x <= 2^31 - 1
 */
 class Palindrome {
 public:
@@ -129,17 +129,17 @@ public:
 
 /* 66. Plus One
 *
-    You are given a large integer represented as an integer array digits,
-    where each digits[i] is the ith digit of the integer.
-    The digits are ordered from most significant to least significant in left-to-right order.
-    The large integer does not contain any leading 0's.
-
-    Increment the large integer by one and return the resulting array of digits.
-
-    Constraints:
-        1 <= digits.length <= 100
-        0 <= digits[i] <= 9
-        digits does not contain any leading 0's.
+*    You are given a large integer represented as an integer array digits,
+*    where each digits[i] is the ith digit of the integer.
+*    The digits are ordered from most significant to least significant in left-to-right order.
+*    The large integer does not contain any leading 0's.
+*
+*    Increment the large integer by one and return the resulting array of digits.
+*
+*    Constraints:
+*        1 <= digits.length <= 100
+*        0 <= digits[i] <= 9
+*        digits does not contain any leading 0's.
 */
 class PlusOne {
 public:
@@ -172,14 +172,14 @@ public:
 
 /* 69. Sqrt(x)
 *
-    Given a non-negative integer x, compute and return the square root of x.
-    Since the return type is an integer, the decimal digits are truncated,
-    and only the integer part of the result is returned.
-
-    Note: You are not allowed to use any built-in exponent function or operator, such as pow(x, 0.5) or x ** 0.5.
-
-    Constraints:
-        0 <= x <= 231 - 1
+*    Given a non-negative integer x, compute and return the square root of x.
+*    Since the return type is an integer, the decimal digits are truncated,
+*    and only the integer part of the result is returned.
+*
+*    Note: You are not allowed to use any built-in exponent function or operator, such as pow(x, 0.5) or x ** 0.5.
+*
+*    Constraints:
+*        0 <= x <= 231 - 1
 */
 class Sqrt {
 public:
@@ -208,11 +208,11 @@ public:
 
 /* 367. Valid Perfect Square
 *
-    Given a positive integer num, write a function which returns True if num is a perfect square else False.
-    Follow up: Do not use any built-in library function such as sqrt.
-
-    Constraints:
-        1 <= num <= 2^31 - 1
+*    Given a positive integer num, write a function which returns True if num is a perfect square else False.
+*    Follow up: Do not use any built-in library function such as sqrt.
+*
+*    Constraints:
+*        1 <= num <= 2^31 - 1
 */
 class PerfectSquare {
 public:
@@ -242,14 +242,14 @@ public:
 
 /* 58. Length of Last Word
 *
-    Given a string s consisting of some words separated by some number of spaces,
-    return the length of the last word in the string.
-    A word is a maximal substring consisting of non-space characters only.
-
-    Constraints:
-        1 <= s.length <= 104
-        s consists of only English letters and spaces ' '.
-        There will be at least one word in s.
+*    Given a string s consisting of some words separated by some number of spaces,
+*    return the length of the last word in the string.
+*    A word is a maximal substring consisting of non-space characters only.
+*
+*    Constraints:
+*        1 <= s.length <= 104
+*        s consists of only English letters and spaces ' '.
+*        There will be at least one word in s.
 */
 class LastWord {
 public:
@@ -280,23 +280,23 @@ public:
 
 /* 26. Remove Duplicates from Sorted Array
 *
-    Given an integer array nums sorted in non-decreasing order,
-    remove the duplicates in-place such that each unique element appears only once.
-    The relative order of the elements should be kept the same.
-    Since it is impossible to change the length of the array in some languages,
-    you must instead have the result be placed in the first part of the array nums.
-    More formally, if there are k elements after removing the duplicates,
-    then the first k elements of nums should hold the final result.
-    It does not matter what you leave beyond the first k elements.
-    Return k after placing the final result in the first k slots of nums.
-
-    Do not allocate extra space for another array.
-    You must do this by modifying the input array in-place with O(1) extra memory.
-
-    Constraints:
-        0 <= nums.length <= 3 * 104
-        -100 <= nums[i] <= 100
-        nums is sorted in non-decreasing order.
+*    Given an integer array nums sorted in non-decreasing order,
+*    remove the duplicates in-place such that each unique element appears only once.
+*    The relative order of the elements should be kept the same.
+*    Since it is impossible to change the length of the array in some languages,
+*    you must instead have the result be placed in the first part of the array nums.
+*    More formally, if there are k elements after removing the duplicates,
+*    then the first k elements of nums should hold the final result.
+*    It does not matter what you leave beyond the first k elements.
+*    Return k after placing the final result in the first k slots of nums.
+*
+*    Do not allocate extra space for another array.
+*    You must do this by modifying the input array in-place with O(1) extra memory.
+*
+*    Constraints:
+*        0 <= nums.length <= 3 * 104
+*        -100 <= nums[i] <= 100
+*        nums is sorted in non-decreasing order.
 */
 class RemoveDup {
 public:
@@ -325,13 +325,13 @@ public:
 
 /* 14. Longest Common Prefix
 *
-    Write a function to find the longest common prefix string amongst an array of strings.
-    If there is no common prefix, return an empty string "".
-
-    Constraints:
-        1 <= strs.length <= 200
-        0 <= strs[i].length <= 200
-        strs[i] consists of only lower-case English letters.
+*    Write a function to find the longest common prefix string amongst an array of strings.
+*    If there is no common prefix, return an empty string "".
+*
+*    Constraints:
+*        1 <= strs.length <= 200
+*        0 <= strs[i].length <= 200
+*        strs[i] consists of only lower-case English letters.
 */
 class LongestCommonPrefix {
 public:
@@ -374,15 +374,15 @@ public:
 
 /* 20. Valid Parentheses
 *
-    Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
-    An input string is valid if:
-
-    Open brackets must be closed by the same type of brackets.
-    Open brackets must be closed in the correct order.
-
-    Constraints:
-        1 <= s.length <= 104
-        s consists of parentheses only '()[]{}'.
+*    Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
+*    An input string is valid if:
+*
+*    Open brackets must be closed by the same type of brackets.
+*    Open brackets must be closed in the correct order.
+*
+*    Constraints:
+*        1 <= s.length <= 104
+*        s consists of parentheses only '()[]{}'.
 */
 class ValidBrackets {
 public:
@@ -425,14 +425,14 @@ public:
 
 /* 136. Single Number
 *
-    Given a non-empty array of integers nums, every element appears twice except for one.
-    Find that single one.
-    You must implement a solution with a linear runtime complexity and use only constant extra space.
-
-    Constraints:
-        1 <= nums.length <= 3 * 104
-        -3 * 104 <= nums[i] <= 3 * 104
-        Each element in the array appears twice except for one element which appears only once.
+*    Given a non-empty array of integers nums, every element appears twice except for one.
+*    Find that single one.
+*    You must implement a solution with a linear runtime complexity and use only constant extra space.
+*
+*    Constraints:
+*        1 <= nums.length <= 3 * 104
+*        -3 * 104 <= nums[i] <= 3 * 104
+*        Each element in the array appears twice except for one element which appears only once.
 */
 class SingleNumber {
 public:
@@ -484,23 +484,23 @@ public:
 
 /* 27. Remove Element
 *
-    Given an integer array nums and an integer val, remove all occurrences of val in nums in-place.
-    The relative order of the elements may be changed.
-
-    Since it is impossible to change the length of the array in some languages,
-    you must instead have the result be placed in the first part of the array nums.
-    More formally, if there are k elements after removing the duplicates,
-    then the first k elements of nums should hold the final result.
-    It does not matter what you leave beyond the first k elements.
-
-    Return k after placing the final result in the first k slots of nums.
-
-    Do not allocate extra space for another array. You must do this by modifying the input array in-place with O(1) extra memory.
-
-    Constraints:
-        0 <= nums.length <= 100
-        0 <= nums[i] <= 50
-        0 <= val <= 100
+*    Given an integer array nums and an integer val, remove all occurrences of val in nums in-place.
+*    The relative order of the elements may be changed.
+*
+*    Since it is impossible to change the length of the array in some languages,
+*    you must instead have the result be placed in the first part of the array nums.
+*    More formally, if there are k elements after removing the duplicates,
+*    then the first k elements of nums should hold the final result.
+*    It does not matter what you leave beyond the first k elements.
+*
+*    Return k after placing the final result in the first k slots of nums.
+*
+*    Do not allocate extra space for another array. You must do this by modifying the input array in-place with O(1) extra memory.
+*
+*    Constraints:
+*        0 <= nums.length <= 100
+*        0 <= nums[i] <= 50
+*        0 <= val <= 100
 */
 class RemoveElement {
 public:
@@ -554,18 +554,18 @@ public:
 
 /* 28. Implement strStr()
 *
-    Implement strStr().
-
-    Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
-
-    Clarification:
-        What should we return when needle is an empty string? This is a great question to ask during an interview.
-        For the purpose of this problem, we will return 0 when needle is an empty string.
-        This is consistent to C's strstr() and Java's indexOf().
-
-    Constraints:
-        0 <= haystack.length, needle.length <= 5 * 104
-        haystack and needle consist of only lower-case English characters.
+*    Implement strStr().
+*
+*    Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+*
+*    Clarification:
+*        What should we return when needle is an empty string? This is a great question to ask during an interview.
+*        For the purpose of this problem, we will return 0 when needle is an empty string.
+*        This is consistent to C's strstr() and Java's indexOf().
+*
+*    Constraints:
+*        0 <= haystack.length, needle.length <= 5 * 104
+*        haystack and needle consist of only lower-case English characters.
 */
 class MystrStr {
 public:
@@ -613,11 +613,11 @@ public:
 
 /* 461. Hamming Distance
 *
-    The Hamming distance between two integers is the number of positions at which the corresponding bits are different.
-    Given two integers x and y, return the Hamming distance between them.
-
-    Constraints:
-        0 <= x, y <= 231 - 1
+*    The Hamming distance between two integers is the number of positions at which the corresponding bits are different.
+*    Given two integers x and y, return the Hamming distance between them.
+*
+*    Constraints:
+*        0 <= x, y <= 231 - 1
 */
 class HammingDistance {
 public:
@@ -638,7 +638,8 @@ public:
 
 /* 191. Number of 1 Bits
 *
-* Write a function that takes an unsigned integer and returns the number of '1' bits it has (also known as the Hamming weight).
+*     Write a function that takes an unsigned integer and returns the number of '1' bits it has (also known as the Hamming weight).
+*
 *     Constraints:
 *         The input must be a binary string of length 32.
 */
@@ -658,6 +659,7 @@ public:
 };
 
 /* 190. Reverse Bits
+*
 *     Reverse bits of a given 32 bits unsigned integer.
 *    
 *     Constraints:
@@ -681,6 +683,7 @@ public:
 };
 
 /* 35. Search Insert Position
+*
 *     Given a sorted array of distinct integers and a target value,
 *     return the index if the target is found. If not, return the index where it would be if it were inserted in order.
 *     You must write an algorithm with O(log n) runtime complexity.
@@ -706,6 +709,7 @@ public:
 };
 
 /* 70. Climbing Stairs
+*
 *     You are climbing a staircase. It takes n steps to reach the top.
 *     Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
 *
@@ -798,6 +802,46 @@ public:
 
         printf("ClimbStairs intput:%d, output:%d \n", n, result);
         return result;
+    }
+};
+
+/* 88. Merge Sorted Array
+*
+*     You are given two integer arrays nums1 and nums2, sorted in non-decreasing order,
+*     and two integers m and n, representing the number of elements in nums1 and nums2 respectively.
+*     Merge nums1 and nums2 into a single array sorted in non-decreasing order.
+*     The final sorted array should not be returned by the function, but instead be stored inside the array nums1.
+*     To accommodate this, nums1 has a length of m + n, where the first m elements denote the elements that should be merged,
+*     and the last n elements are set to 0 and should be ignored. nums2 has a length of n.
+*
+*     Constraints:
+*         nums1.length == m + n
+*         nums2.length == n
+*         0 <= m, n <= 200
+*         1 <= m + n <= 200
+*        -109 <= nums1[i], nums2[j] <= 109
+*/
+class MergeVector {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int idx1 = m - 1;
+        int idx2 = n - 1;
+        int idx0 = m + n - 1;
+
+        PrintData::print(nums1);
+        PrintData::print(nums2);
+
+        while (idx2 >= 0) {
+            if (idx1 >= 0 && nums1[idx1] >= nums2[idx2]) {
+                nums1[idx0] = nums1[idx1];
+                idx1--;
+            } else {
+                nums1[idx0] = nums2[idx2];
+                idx2--;
+            }
+            idx0--;
+        }
+        PrintData::print(nums1);
     }
 };
 

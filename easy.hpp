@@ -42,6 +42,23 @@ public:
     }
 };
 
+struct ListNode {
+    int val;
+    ListNode* next;
+
+    ListNode(): val(0), next(nullptr) {
+
+    }
+
+    ListNode(int x) : val(x), next(nullptr) {
+
+    }
+
+    ListNode(int x, ListNode* next) : val(x), next(next) {
+
+    }
+};
+
 /* 1. Two Sum
 *
 *    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
@@ -923,6 +940,116 @@ public:
 
         PrintData::print(triangle[rowIndex]);
         return triangle[rowIndex];
+    }
+};
+
+/* 121. Best Time to Buy and Sell Stock
+*
+*      You are given an array prices where prices[i] is the price of a given stock on the ith day.
+*      You want to maximize your profit by choosing a single day to buy one stock and choosing a different day
+*      in the future to sell that stock.
+*      Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.
+*
+*      Constraints:
+*          1 <= prices.length <= 105
+*          0 <= prices[i] <= 104
+*/
+class MaxProfit {
+public:
+    int maxProfit(vector<int>& v) {
+
+        PrintData::print(v);
+
+        int min = v[0], max = -1;
+        int profit = 0;
+        for (int i = 1; i < v.size(); i++)
+        {
+            if (v[i] < min) {
+                min = v[i];
+                max = 0;
+            }
+            if (v[i] > max)
+                max = v[i];
+            if (max - min > profit)
+                profit = max - min;
+        }
+
+        printf("MaxProfit: %d \n", profit);
+        return profit;
+
+    }
+};
+
+/* 83. Remove Duplicates from Sorted List
+*
+*     Given the head of a sorted linked list, delete all duplicates such that each element appears only once.
+*     Return the linked list sorted as well.
+*
+*     Constraints:
+*         The number of nodes in the list is in the range [0, 300].
+*         -100 <= Node.val <= 100
+*         The list is guaranteed to be sorted in ascending order.
+*
+*     Definition for singly-linked list.
+*     struct ListNode {
+*         int val;
+*         ListNode *next;
+*         ListNode() : val(0), next(nullptr) {}
+*         ListNode(int x) : val(x), next(nullptr) {}
+*         ListNode(int x, ListNode *next) : val(x), next(next) {}
+*     };
+*/
+class DeleteDuplicatesNode {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (NULL == head) {
+            return head;
+        }
+        ListNode* prev = head;
+        ListNode* cur = prev->next;
+
+        while (NULL != cur) {
+            if (cur->val == prev->val) {
+                prev->next = cur->next;
+                delete cur;
+                cur = prev->next;
+            } else {
+                prev = prev->next;
+                cur = cur->next;
+            }
+            return head;
+        }
+    }
+
+    ListNode* deleteDuplicatesNaive(ListNode* head) {
+        if (NULL == head) {
+            return head;
+        }
+        ListNode* current = head;
+        ListNode* prev = head;
+        ListNode* dup = NULL;
+        ListNode* retList = head;
+        int headVal = head->val;
+
+        while (NULL != current->next) {
+            if (current->val == current->next->val) {
+                dup = current;
+                current = current->next;
+                if (prev == dup) {
+                    prev = current;
+                } else {
+                    prev->next = current;
+                }
+                if (headVal == current->val) {
+                    retList = current;
+                }
+                delete dup;
+            } else {
+                prev = current;
+                current = current->next;
+            }
+        }
+        return retList;
     }
 };
 

@@ -21,9 +21,9 @@ public:
 
 class PrintData {
 public:
-    static void print(vector<int> vec) {
+    static void print(vector<int> vec, string strName = "Vector") {
         size_t count = vec.size();
-        printf("\ninput vector size:%zd \n", count);
+        printf("\n%s size:%zd \n", strName.c_str(), count);
         printf("[ ");
         for (uint32_t i = 0; i < count; i++) {
             printf("%5d  ", vec[i]);
@@ -33,7 +33,7 @@ public:
 
     static void print(vector<int> vec, uint32_t printCount) {
         size_t vectorCount = vec.size();
-        printf("\noutput vector size:%zd, printf size:%d \n", vectorCount, printCount);
+        printf("\nvector size:%zd, printf size:%d \n", vectorCount, printCount);
         printf("[ ");
         for (uint32_t i = 0; i < vectorCount && i < printCount; i++) {
             printf("%5d  ", vec[i]);
@@ -1050,6 +1050,47 @@ public:
             }
         }
         return retList;
+    }
+};
+
+/* 167. Two Sum II - Input Array Is Sorted
+*
+*     Given a 1-indexed array of integers numbers that is already sorted in non-decreasing order,
+*     find two numbers such that they add up to a specific target number.
+*     Let these two numbers be numbers[index1] and numbers[index2] where 1 <= index1 < index2 <= numbers.length.
+*     Return the indices of the two numbers, index1 and index2, added by one as an integer array [index1, index2] of length 2.
+*     The tests are generated such that there is exactly one solution. You may not use the same element twice.
+*
+*     Constraints:
+*         2 <= numbers.length <= 3 * 104
+*        -1000 <= numbers[i] <= 1000
+*        numbers is sorted in non-decreasing order.
+*        -1000 <= target <= 1000
+*        The tests are generated such that there is exactly one solution.
+*/
+class TwoSumII {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+
+        PrintData::print(numbers, "input numbers");
+        printf("target:%d \n", target);
+
+        int left = 0;
+        int right = numbers.size() - 1;
+
+        while (numbers[left] + numbers[right] != target) {
+            if (numbers[left] + numbers[right] > target) {
+                right--;
+            } else {
+                left++;
+            }
+        }
+        vector<int> ret;
+        ret.push_back(left + 1);
+        ret.push_back(right + 1);
+
+        PrintData::print(ret, "output Result");
+        return ret;
     }
 };
 

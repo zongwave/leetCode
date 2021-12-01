@@ -1220,5 +1220,86 @@ public:
     }
 };
 
+/* 283. Move Zeroes
+*
+*     Given an integer array nums, move all 0's to the end of it while maintaining the relative order of the non-zero elements.
+*     Note that you must do this in-place without making a copy of the array.
+*
+*     Constraints:
+*         1 <= nums.length <= 104
+*        -231 <= nums[i] <= 231 - 1
+*/
+class MoveZeroes {
+public:
+    void moveZeroes(vector<int>& nums) {
+
+        PrintData::print(nums, "MoveZeroes input");
+
+        int idxCopy = 0;
+        for (int idxRead = 0; idxRead < nums.size(); idxRead++) {
+            if (nums[idxRead] != 0) {
+                nums[idxCopy++] = nums[idxRead];
+            }
+        }
+
+        while (idxCopy != nums.size()) {
+            nums[idxCopy++] = 0;
+        }
+        PrintData::print(nums, "Moved Zeroes");
+    }
+
+    void moveZeroesComplex(vector<int>& nums) {
+        vector<int> frontZeroes;
+        vector<int> backZeroes;
+
+        frontZeroes.resize(2);
+        backZeroes.resize(2);
+        frontZeroes[0] = 0;
+        frontZeroes[1] = 0;
+        backZeroes[0] = nums.size();
+        backZeroes[1] = 0;
+
+        PrintData::print(nums, "MoveZeroes input");
+
+        int idx = 0;
+
+        while (frontZeroes[0] + frontZeroes[1] != nums.size()) {
+            while (idx < nums.size() ) {
+                printf("search from idx:%d \n", idx);
+                if (nums[idx++] == 0) {
+                    if (frontZeroes[1] == 0) {
+                        frontZeroes[0] = idx - 1;
+                        frontZeroes[1] = 1;
+                        while (idx < nums.size() && nums[idx++] == 0) {
+                            frontZeroes[1] += 1;
+                        }
+                    } else if (backZeroes[1] == 0) {
+                        backZeroes[0] = idx - 1;
+                        backZeroes[1] = 1;
+                        while (idx < nums.size() && nums[idx++] == 0) {
+                            backZeroes[1] += 1;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            /* move data, update zeroes table */
+            if (frontZeroes[1] != 0) {
+                for (int i = frontZeroes[0] + frontZeroes[1]; i < backZeroes[0]; i++) {
+                    nums[i - frontZeroes[1]] = nums[i];
+                    nums[i] = 0;
+                }
+            }
+
+            PrintData::print(nums, "MoveZeroes output");
+            frontZeroes[0] = backZeroes[0] - frontZeroes[1];
+            frontZeroes[1] += backZeroes[1];
+            backZeroes[0] = nums.size();
+            backZeroes[1] = 0;
+        }
+    }
+};
+
 #endif
 

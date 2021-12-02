@@ -1076,7 +1076,7 @@ public:
         printf("target:%d \n", target);
 
         int left = 0;
-        int right = numbers.size() - 1;
+        int right = (int)numbers.size() - 1;
 
         while (numbers[left] + numbers[right] != target) {
             if (numbers[left] + numbers[right] > target) {
@@ -1256,7 +1256,7 @@ public:
         backZeroes.resize(2);
         frontZeroes[0] = 0;
         frontZeroes[1] = 0;
-        backZeroes[0] = nums.size();
+        backZeroes[0] = (int)nums.size();
         backZeroes[1] = 0;
 
         PrintData::print(nums, "MoveZeroes input");
@@ -1295,9 +1295,59 @@ public:
             PrintData::print(nums, "MoveZeroes output");
             frontZeroes[0] = backZeroes[0] - frontZeroes[1];
             frontZeroes[1] += backZeroes[1];
-            backZeroes[0] = nums.size();
+            backZeroes[0] = (int)nums.size();
             backZeroes[1] = 0;
         }
+    }
+};
+
+#define PICKUP_NUMBER 26
+
+static int guess(int num) {
+    if (num > PICKUP_NUMBER) return -1;
+    if (num < PICKUP_NUMBER) return 1;
+    if (num == PICKUP_NUMBER) return 0;
+    return 0;
+}
+
+/* 374. Guess Number Higher or Lower
+*
+*     We are playing the Guess Game. The game is as follows:
+*     I pick a number from 1 to n. You have to guess which number I picked.
+*     Every time you guess wrong, I will tell you whether the number I picked is higher or lower than your guess.
+*     You call a pre-defined API int guess(int num), which returns 3 possible results:
+*     -1: The number I picked is lower than your guess (i.e. pick < num).
+*     1: The number I picked is higher than your guess (i.e. pick > num).
+*     0: The number I picked is equal to your guess (i.e. pick == num).
+*     Return the number that I picked.
+*
+*     Constraints:
+*         1 <= n <= 231 - 1
+*         1 <= pick <= n
+*/
+class GuessNumber {
+public:
+    int guessNumber(int n) {
+
+        n = n / 2;
+        int mark = guess(n);
+        int deleta = n;
+
+        while (mark != 0) {
+            deleta = (deleta / 2 > 1) ? deleta / 2 : 1;
+            if (mark == -1) {
+                printf("%d higher than the guess number, minus:%d\n", n, deleta);
+                n = n - deleta;
+                mark = guess(n);
+            } else if (mark == 1) {
+                printf("%d lower than the guess number, plus:%d\n", n, deleta);
+                n = n + deleta;
+                mark = guess(n);
+            }
+        }
+
+        printf("guess the number %d\n", n);
+        return n;
     }
 };
 

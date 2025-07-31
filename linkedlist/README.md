@@ -185,6 +185,7 @@ ListNode* reverseList(ListNode* head) {
   * [3507. 删除数组中的最小对](#3507-minimum-pair-removal-to-sort-array)
   * [705. 设计哈希集合](#705-design-hashset)
   * [707. 设计链表](#707-design-linked-list)
+  * [86. 分拆链表](#86-partition-list)
 
 ---
 
@@ -1281,6 +1282,8 @@ private:
 };
 ```
 
+<a href="#目录" style="font-size: 16px; color: #666;">▲ 返回目录</a>
+
 这个类提供以下功能：
 
 #### ✅ `add(int key)`
@@ -1531,18 +1534,167 @@ void deleteAtIndex(int index) {
 * `addAtTail()`（从 O(n) 降为 O(1)）
 * 判断 `addAtIndex(index)` 是否越界（可提前判断）
 
-当然这属于优化方向，并不影响当前功能的正确性。
+```cpp
+class MyLinkedList {
+public:
+    MyLinkedList() {
+        _head = new ListNode(); // 虚拟头节点
+        _size = 0;
+    }
+    
+    ~MyLinkedList() {
+        ListNode* curr = _head;
+        while (curr) {
+            ListNode* temp = curr;
+            curr = curr->next;
+            delete temp;
+        }
 
-如需，我可以帮你扩展带 `_size` 的版本。
+    }
 
+    int get(int index) {
+        if (index < 0 || index >= _size) return -1;
+
+        ListNode* curr = _head->next;
+        for (int i = 0; i < index; i++) {
+            curr = curr->next;
+        }
+        return curr->val;
+    }
+    
+    void addAtHead(int val) {
+        return addAtIndex(0, val);
+    }
+    
+    void addAtTail(int val) {
+        addAtIndex(_size, val);
+    }
+    
+    void addAtIndex(int index, int val) {
+        if (index < 0 || index > _size) return;
+
+        ListNode* curr = _head;
+        
+        for (int i = 0; i < index; i++) {
+            curr = curr->next;
+        }
+
+        ListNode* node = new ListNode(val);
+        node->next = curr->next;
+        curr->next = node;
+        _size++;
+    }
+    
+    void deleteAtIndex(int index) {
+        if (index < 0 || index >= _size) return;
+        ListNode* curr = _head;
+
+        for (int i = 0; i < index; i++) {
+            curr = curr->next;
+        }
+
+        ListNode* temp = curr->next;
+        curr->next = temp->next;
+        delete temp;
+        _size--;
+    }
+
+private:
+    struct ListNode {
+        int val;
+        ListNode* next;
+        ListNode(): val(0), next(nullptr) {}
+        ListNode(int x): val(x), next(nullptr) {}
+    };
+    ListNode* _head;
+    int _size;
+};
+```
 
 ---
 
 <a href="#目录" style="font-size: 16px; color: #666;">▲ 返回目录</a>
 
+
 ---
 
+## 86. Partition List
 
+[![图示](diagram/partition.jpg)](https://raw.githubusercontent.com/zongwave/leetcode/main/linkedlist/diagram/partition.jpg)
+
+
+
+你的实现整体思路是正确的，但有一个非常重要的**潜在 bug**：在分配给 `beforeTail->next` 或 `afterTail->next` 后立刻执行了 `curr = curr->next`，**但这实际上破坏了原链表的结构**。
+
+---
+
+### ⚠️ 问题详解：
+
+在以下代码中：
+
+```cpp
+beforeTail->next = curr;
+curr = curr->next;
+beforeTail = beforeTail->next;
+```
+
+此时 `curr` 是接到 `beforeTail` 后的节点，但你在前面就移动了 `curr = curr->next`，导致丢失了 `beforeTail->next->next` 指针，**这使得最终两个链表可能会连接成环，或者出现错误拼接。**
+
+---
+
+### ✅ 正确方式：
+
+应该在把 `curr` 节点接到 `beforeTail` 或 `afterTail` 后，**提前保存好 `curr->next`**，再处理连接，然后再移动指针。
+
+---
+
+### ✅ 修正后的代码如下：
+
+```cpp
+class Solution {
+public:
+    ListNode* partition(ListNode* head, int x) {
+        ListNode beforeDummy(0);
+        ListNode afterDummy(0);
+        ListNode* beforeTail = &beforeDummy;
+        ListNode* afterTail = &afterDummy;
+
+        ListNode* curr = head;
+
+        while (curr) {
+            ListNode* nextNode = curr->next; // 🔧 提前保存 curr->next
+            curr->next = nullptr;            // 🧹 断开 curr 和原链表的连接
+
+            if (curr->val < x) {
+                beforeTail->next = curr;
+                beforeTail = beforeTail->next;
+            } else {
+                afterTail->next = curr;
+                afterTail = afterTail->next;
+            }
+
+            curr = nextNode; // ➡️ 移动 curr 到下一个节点
+        }
+
+        beforeTail->next = afterDummy.next; // 拼接两段
+        return beforeDummy.next;
+    }
+};
+```
+<a href="#目录" style="font-size: 16px; color: #666;">▲ 返回目录</a>
+
+---
+
+### ✅ 修复说明：
+
+* `nextNode = curr->next`: 提前保存原链表顺序；
+* `curr->next = nullptr`: 避免旧链表残留连接；
+* 按照大小加入两个新链表；
+* 最后拼接两个链表；
+
+---
+
+如果你想进一步探索 **不使用额外空间就地重排的可能性**（虽然违反了保持相对顺序），我们也可以探讨。但当前题目要求保序，这是最稳定且推荐的解法。是否需要继续？
 
 
 ---

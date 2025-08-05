@@ -21,7 +21,8 @@
   * [290. 单词模板](#290-word-pattern)
   * [3. 最长无重复子串](#3-longest-substring-without-repeating-characters)
   * [13. 罗马数字字符串](#13-roman-to-integer)
-
+  * [14. 最长相同前缀](#14-longest-common-prefix)
+  * [242. 有效变位词](#242-valid-anagram)
 
 ---
 
@@ -690,6 +691,21 @@ public:
 ## 13. Roman to Integer
 
 
+**问题描述**：  
+将罗马数字（由字符 `I, V, X, L, C, D, M` 组成）转换为整数。罗马数字的规则：  
+- 通常符号相加（如 `III = 3`）；  
+- 若小符号在大符号左侧，则相减（如 `IV = 4`）。
+
+**示例**：  
+输入：`s = "MCMXCIV"`  
+输出：`1994`（`M=1000, CM=900, XC=90, IV=4`）
+
+**核心方法**：  
+- **正向遍历 + 减法规则**：从左到右遍历，若当前符号值 < 右侧符号值，则减去当前值（如 `IV` 处理为 `-1 + 5`）。  
+- 时间复杂度：`O(n)`，空间复杂度：`O(1)`（固定符号映射表）。
+
+---
+
 #### **你的解法（反向遍历）遇到的问题**
 1. **边界条件处理错误**
    - 你从 `i = s.size() - 1` 开始反向遍历，循环条件是 `i > 0`，但最后又单独加 `s[0]`。
@@ -771,3 +787,233 @@ public:
    - 遍历时检查当前字符和下一个字符的关系，决定加减。
 
 **推荐始终使用正向遍历**，避免不必要的复杂性！
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 14. Longest Common Prefix
+
+**题目简介**：在字符串数组中找到所有字符串的最长公共前缀。
+
+---
+
+### 你的代码主要问题：
+1. **逻辑结构错误**：
+   - 双重循环的设计导致比较逻辑混乱，外层循环字符串，内层又循环字符串
+   - `chars`数组错误地收集了所有字符串的同一位置字符，但比较方式不正确
+
+2. **边界条件缺失**：
+   - 没有处理空输入的情况（`strs.empty()`）
+   - 没有检查字符串长度，可能导致越界访问
+
+3. **结果返回错误**：
+   - `substr(0,j)`的j值计算方式不正确
+   - 无法正确识别公共前缀的终止位置
+
+### 正确思考方式：
+1. **基础思路**：
+   - 以第一个字符串为基准
+   - 逐个字符与其他字符串比较
+
+2. **优化方向**：
+   - **水平扫描**：逐步缩短前缀直到匹配所有字符串
+   - **垂直扫描**：逐个字符检查所有字符串的同一位置
+
+3. **关键步骤**：
+   ```cpp
+   for (每个字符位置 i)
+       for (每个字符串 str)
+           如果 str[i] 不匹配基准字符串
+               返回当前已匹配的前缀
+   ```
+
+4. **注意事项**：
+   - 优先处理空输入等边界情况
+   - 及时终止不必要的比较
+   - 注意字符串长度差异
+
+**示例正确解法**（垂直扫描）：
+```cpp
+string longestCommonPrefix(vector<string>& strs) {
+    if(strs.empty()) return "";
+    for(int i=0; i<strs[0].size(); i++){
+        char c = strs[0][i];
+        for(const auto& str : strs){
+            if(i >= str.size() || str[i] != c){
+                return strs[0].substr(0,i);
+            }
+        }
+    }
+    return strs[0];
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+**水平扫描**
+```cpp
+string longestCommonPrefix(vector<string>& strs) {
+    if(strs.empty()) return "";
+
+    string prefix = strs[0];
+    for (int i = 1; i < strs.size(); i++) {
+      while (strs[i].find(prefix) != 0) {
+        prefix = prefix.substr(0, prefix.length() - 1);
+        if (prefix.empty()) return "";
+      }
+    }
+    return prefix;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 242. Valid Anagram
+
+### **你的解题错误总结**
+这道题要求判断两个字符串 `s` 和 `t` 是否为 **变位词（anagram）**，即它们是否包含相同的字符且各字符的出现次数一致。你的初始代码存在几个关键问题：
+
+---
+
+#### **错误 1：错误使用 `unordered_map` 存储索引而非计数**
+**你的代码：**
+```cpp
+unordered_map<char, int> sMap;
+for (int i = 0; i < s.size(); i++) {
+    sMap[s[i]] = i;  // 存储的是字符的最后出现位置，而非计数
+}
+```
+**问题：**
+- 你存储的是字符的 **最后一次出现的索引**（`i`），而不是字符的出现次数。
+- 这导致无法正确统计字符频率，比如 `s = "aab"` 会得到 `{'a': 2, 'b': 2}`（因为 `i` 是索引，不是计数）。
+
+**修正：**
+应改为统计字符出现次数：
+```cpp
+for (char c : s) sMap[c]++;  // 正确统计字符频率
+```
+
+---
+
+#### **错误 2：仅检查字符是否存在，未检查计数是否匹配**
+**你的代码：**
+```cpp
+for (int i = 0; i < t.size(); i++) {
+    if (sMap.count(t[i]) != 1) {  // 只检查字符是否存在
+        return false;
+    }
+}
+```
+**问题：**
+- `sMap.count(t[i])` 仅检查字符是否在 `s` 中出现过，但 **未检查 `t` 中该字符是否比 `s` 中多**。
+- 例如：
+  - `s = "aab"`（`{'a':2, 'b':1}`），`t = "abb"`：
+    - `'a'` 存在，`'b'` 存在，但 `'b'` 在 `t` 中出现 2 次（`s` 中只有 1 次），应返回 `false`，但你的代码会返回 `true`。
+
+**修正：**
+需要检查字符的剩余计数是否为 `0`：
+```cpp
+for (char c : t) {
+    if (sMap[c] == 0) return false;  // 检查是否超额使用字符
+    sMap[c]--;
+}
+```
+
+---
+
+#### **错误 3：未处理字符计数减为负数的情况**
+**你的代码的后续版本：**
+```cpp
+for (char c : t) {
+    if (sMap.count(c) == 0) return false;  // 依赖 count() 判断
+    sMap[c]--;
+}
+```
+**问题：**
+- `sMap.count(c)` 只检查键是否存在，即使 `sMap[c]` 被减到 `0` 或负数，`count(c)` 仍返回 `1`。
+- 例如 `s = "aab"`，`t = "abb"`：
+  - 遍历 `t` 时，`'b'` 的计数会从 `1` → `0` → `-1`，但 `count('b')` 始终为 `1`，无法触发 `false`。
+
+**修正：**
+改为直接检查 `sMap[c] == 0`：
+```cpp
+if (sMap[c] == 0) return false;  // 正确检查计数是否用尽
+```
+
+---
+
+### **正确解法总结**
+1. **长度不同直接返回 `false`**：
+   ```cpp
+   if (s.size() != t.size()) return false;
+   ```
+2. **统计字符频率**：
+   - 使用哈希表或数组（如仅小写字母可用 `int[26]`）。
+3. **检查 `t` 的字符**：
+   - 如果字符不在 `s` 中或计数已为 `0`，返回 `false`。
+   - 否则减少计数。
+
+#### **最终代码（哈希表版）**
+```cpp
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if (s.size() != t.size()) return false;
+        unordered_map<char, int> sMap;
+        for (char c : s) sMap[c]++;
+        for (char c : t) {
+            if (sMap[c] == 0) return false;
+            sMap[c]--;
+        }
+        return true;
+    }
+};
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+#### **优化版（数组计数，仅小写字母）**
+```cpp
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if (s.size() != t.size()) return false;
+        int count[26] = {0};
+        for (char c : s) count[c - 'a']++;
+        for (char c : t) {
+            if (count[c - 'a'] == 0) return false;
+            count[c - 'a']--;
+        }
+        return true;
+    }
+};
+```
+
+---
+
+### **关键学习点**
+1. **哈希表的正确使用**：
+   - `map[key]` 和 `map.count(key)` 的区别。
+   - 统计频率时应累加计数，而非存储索引。
+2. **变位词的核心条件**：
+   - 字符组成完全相同（包括次数）。
+3. **边界情况**：
+   - 字符串长度不同、字符计数减为负数、字符未出现等。
+
+通过分析这些错误，你可以更深入理解如何正确使用哈希表解决频率统计问题！
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>

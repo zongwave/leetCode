@@ -1,7 +1,7 @@
 
-<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
-
 # LeetCode 75 专题总结
+
+[▲ 返回题目](#题目)
 
 ## 核心解题原则
 
@@ -9,8 +9,8 @@
 
 ## 题目
 
-* [Top 75 算法总结](#LeetCode-75-总结)
-  * [目录](#目录)
+* [Top 75 算法总结](#leetcode-75-专题总结)
+  * 目录
   * [1768. 交替合并字符串](#1768-merge-strings-alternately)
   * [1071. 最大公约数](#1071-greatest-common-divisor-of-strings)
   * [605. 能种花吗](#605-can-place-flowers)
@@ -29,7 +29,10 @@
   * [1137. 第N个泰波那契数](#1137-n-th-tribonacci-number)
   * [136. 单独的数](#136-single-number)
   * [746. 最省钱的爬楼梯](#746-min-cost-climbing-stairs)
-
+  * [328. 奇偶链表](#328-odd-even-linked-list)
+  * [2130. 链表最大孪生数之和](#2130-maximum-twin-sum-of-a-linked-list)
+  * [1657. 判断两个字符串是否接近](#1657-determine-if-two-strings-are-close)
+  * [198. 打家劫舍](#198-house-robber)
 
 ---
 
@@ -2192,11 +2195,9 @@ for (int i = 3; i <= n; i++) {
 return t[2];
 ```
 
-
 ---
 
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
-
 
 ---
 
@@ -2370,6 +2371,7 @@ public:
      ```cpp
      dp[i] = min(dp[i-1] + cost[i-1], dp[i-2] + cost[i-2]);
      ```
+
    * 解决了 off-by-one 问题，但空间是 O(n)
 
 5. **第五阶段：空间优化版（最终版）**
@@ -2406,3 +2408,563 @@ public:
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
 
 ---
+
+## 328. Odd Even Linked List
+
+我帮你整理一下你的解题过程和这道题的定位原因。
+
+---
+
+### 1. 你的解题过程回顾
+
+```cpp
+
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if (!head || !head->next) return head;
+
+        ListNode* odd = head;
+        ListNode* even = head->next;
+        ListNode* evenHead = even;
+
+        while (even && even->next) {
+            odd->next = even->next;
+            odd = odd->next;
+            even->next = odd->next;
+            even = even->next;
+        }
+        odd->next = evenHead;
+
+        return head;
+    }
+
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+### **起点**
+
+* 一开始你明白了题意：把链表中奇数位置节点放在前面，偶数位置节点放在后面，保持相对顺序不变。
+* 你决定用两个指针组（odd, even）分别处理奇偶节点，并在最后把奇数链表尾巴接到偶数链表头。
+
+### **遇到的困难**
+
+1. **`while` 循环的退出条件**
+
+   * 你一开始倾向写多个条件 `(oddCurr && oddCurr->next && evenCurr && evenCurr->next)`，怕出现空指针访问。
+   * 实际上，只要 `evenCurr && evenCurr->next` 就能保证安全，因为 `oddCurr` 总是紧随 `evenCurr` 推进。
+
+2. **`oddCurr->next` 和 `evenCurr->next` 最后的赋值**
+
+   * 你花了时间思考循环结束后奇链表尾巴如何接到偶链表头，以及偶链表尾巴是否需要 `nullptr` 收尾。
+   * 最终你加了两行：
+
+     ```cpp
+     if (oddCurr) oddCurr->next = evenHead;
+     if (evenCurr) evenCurr->next = nullptr;
+     ```
+
+     这样保证了链表闭合正确。
+
+### **最终解法**
+
+* 使用两个指针分别构建奇数链表和偶数链表。
+* 循环中交替推进 odd、even 指针。
+* 循环结束后把 odd 链表的尾巴接到 even 链表的头部。
+* 可运行，但循环条件和变量略显复杂。
+
+---
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+### 2. 这道题为什么是 Medium
+
+LeetCode 把它归为 Medium 主要原因：
+
+1. **链表指针操作需要高度精确**
+
+   * 必须同时维护两个指针链（奇、偶），并保证它们互不干扰。
+   * 稍不注意，链表就会断开或形成环。
+
+2. **循环退出条件不直观**
+
+   * 如果不理清 `odd` 和 `even` 的推进关系，很容易出现多余的条件或空指针错误。
+
+3. **边界情况较多**
+
+   * 空链表
+   * 只有一个节点
+   * 只有两个节点
+   * 全是奇数/偶数个节点
+
+4. **考察代码简洁性**
+
+   * 尽管逻辑不复杂，但想写到最简洁（例如 `while (even && even->next)`）需要对指针推进节奏有很好的直觉。
+
+所以它虽然不需要高阶算法，但属于“实现细节要求高”的链表操作题，容易在面试中卡人，放在 Medium 是合理的。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 2130. Maximum Twin Sum of a Linked List
+
+---
+
+```cpp
+
+
+```
+
+
+### 1. 初次解答过程
+
+* **第一版做法**
+
+  * 直接用 `vector<int>` 存下链表所有值，再用双指针计算 twin sum 最大值。
+  * 好处：思路简单直接；坏处：需要 O(n) 额外空间。
+* **思路特点**
+
+  * 类似数组题的处理，把链表问题转化为数组问题来做。
+  * 没有修改原链表，所以链表结构保持不变。
+
+---
+
+### 2. 空间优化的尝试
+
+* **动机**：你想在 O(1) 额外空间里完成计算，去掉 `vector`。
+* **第二版做法**
+
+  1. 用快慢指针找链表中点 (`slow` 指针最终指向后半段起点)。
+  2. 原地反转后半段链表。
+  3. 从链表首部和反转后的后半段同时向中间走，计算 twin sum 最大值。
+  4. 直接返回结果，没有恢复链表。
+* **结果**：算法正确，空间从 O(n) 降到 O(1)，但会修改输入链表。
+
+---
+
+### 3. 问题与反思
+
+* **问题一**：
+  你意识到反转后半段会破坏原链表结构，如果题目或面试要求不能修改链表，就不合适。
+* **问题二**：
+  在恢复链表时，你写了
+
+  ```cpp
+  reverseList(secondHalfHead);
+  ```
+
+  但没有重新把恢复后的链表**连接回前半段**，导致恢复不完整。
+* **产生疑问**：恢复之后的链表和前半段是如何连接的？
+
+  * 你想明白了：反转会断开原有 `next` 链接，恢复后需要手动找到前半段最后一个节点，将它的 `next` 指向恢复后的后半段头结点。
+
+---
+
+### 4. 后续的改进
+
+* **第三版做法**（严谨版本）
+
+  1. 找到链表中点，保存 `secondHalfHead`。
+  2. 反转后半段链表。
+  3. 双指针计算 twin sum 最大值。
+  4. 再反转一次后半段，得到恢复的链表片段。
+  5. 找到前半段最后节点，将 `next` 指向恢复后的后半段头结点。
+* **改进优点**：
+
+  * 满足 O(1) 空间。
+  * 保证输入链表完全恢复原状。
+  * 面试场景更安全，即使面试官检查链表也不会发现结构被破坏。
+
+---
+
+### 5. 收获与思考
+
+* 你经历了一个\*\*“空间换时间” → “原地优化” → “细节修复”\*\*的过程。
+* 反转链表是链表类题目的高频技巧，但它往往伴随**链表断开/重连**的问题。
+* 恢复原链表需要多一步思考：**反转改变了哪些指针？怎样保证重新连起来？**
+* 这道题之所以是 medium 难度，是因为：
+
+  1. 涉及快慢指针找中点（链表遍历技巧）。
+  2. 涉及链表反转（基础但要熟练）。
+  3. 需要同时考虑空间优化与结构恢复（细节容易错）。
+
+---
+
+我看你现在已经明白这个题的全部指针变化过程了，但如果我帮你画一个「反转前 → 反转后 → twin sum → 再反转恢复」的示意图，你就能**一眼看懂断链与重连的节点位置**，以后再遇到类似问题也不会迷糊。
+
+
+## 1657. Determine if Two Strings Are Close
+
+好的，我们可以把你整个修改过程梳理成一个完整总结。我会先介绍题目背景，然后按版本逐步总结你的改进和优化过程。
+
+---
+
+### 题目介绍
+
+**题目**：Two strings are considered **close** if you can attain one from the other using the following operations:
+
+1. **Swap any two existing characters**（字符交换）
+2. **Transform every occurrence of one existing character into another existing character, and do the same with the other character**（交换字符身份）
+
+**要求**：给定两个字符串 `word1` 和 `word2`，判断它们是否可以通过上述操作互相转换。
+
+**约束条件**：
+
+* `1 <= word1.length, word2.length <= 10^5`
+* 字符串仅包含小写英文字母
+
+---
+
+### 你的版本修改历程
+
+### **第一版**
+
+```cpp
+for (const auto& [letter, count] : m1) {
+    if (!m2.count(letter)) return false; 
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **思路**：
+
+  * 使用两个 `unordered_map` 统计每个字符出现次数
+  * 检查两个 map 是否包含相同的字符集合
+* **问题**：
+
+  * 只检查了字符集合，没有比较频次
+  * 无法区分 `aabb` 和 `abab` 是否 close
+
+---
+
+### **第二版**
+
+```cpp
+unordered_set<int> s1, s2;
+// ...
+for (const auto& occur : s1) {
+    if (!s2.count(occur)) return false;
+}
+for (const auto& occur : s2) {
+    if (!s1.count(occur)) return false;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+* **思路**：
+
+  * 除了检查字符集合，还用 `unordered_set` 记录每个字符出现次数
+  * 比较频次集合是否一致
+* **问题**：
+
+  * 使用 `unordered_set` 会丢失频次的重复信息
+  * 例如两个频次 `[1,1,2]` 和 `[1,2,2]`，set 比较会误判
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### **第三版**
+
+```cpp
+vector<int> s1, s2;
+// ...
+sort(s1.begin(), s2.begin());
+return s1 == s2;
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **思路**：
+
+  * 用 vector 记录频次，并 **排序** 后比较
+* **优点**：
+
+  * 解决了重复频次丢失的问题
+  * 简洁明了，正确判断是否 close
+* **时间复杂度**：
+
+  * O(n + σ log σ)，σ=26 → 排序开销很小
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+### **第四版**
+
+```cpp
+occur2.push_back(map2.count(c)); // ❌ 错误
+```
+
+* **思路**：
+
+  * 尝试用 map 遍历，将频次 push 到 vector
+* **问题**：
+
+  * 写成 `map2.count(c)` → 只得到 0/1，而不是实际频次
+  * 逻辑错误，无法正确判断
+
+---
+
+### **数组版本（排序版）**
+
+```cpp
+class Solution {
+public:
+    bool closeStrings(string word1, string word2) {
+        if (word1.size() != word2.size()) return false;
+
+        vector<int> v1(26, 0), v2(26, 0);
+        for (int i = 0; i < word1.size(); i++) {
+            v1[word1[i] - 'a'] ++;
+            v2[word2[i] - 'a'] ++;
+        }
+
+        for (int i = 0; i < 26; i++) {
+            if ((v1[i] == 0) != (v2[i] == 0)) return false;
+        }
+        sort(v1.begin(), v1.end());
+        sort(v2.begin(), v2.end())
+        return v1 == v2;
+    }
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **思路**：
+
+  * 由于只包含小写字母，使用长度 26 的数组统计频次
+  * 排序后比较频次
+* **优点**：
+
+  * 空间更小，速度更快
+  * 逻辑清晰
+* **时间复杂度**：O(n)，空间 O(1)
+
+---
+
+### **不排序版本**
+
+```cpp
+class Solution {
+public:
+    bool closeStrings(string word1, string word2) {
+        if (word1.size() != word2.size()) return false;
+
+        vector<int> v1(26, 0), v2(26, 0);
+        for (int i = 0; i < word1.size(); i++) {
+            v1[word1[i] - 'a'] ++;
+            v2[word2[i] - 'a'] ++;
+        }
+        for (int i = 0; i < 26; i++) {
+            if ((v1[i] == 0) != (v2[i] == 0)) return false;
+        }
+        unordered_map<int, int> m1;
+        unordered_map<int, int> m2;
+        for (int i = 0; i < 26; i++) {
+            m1[v1[i]] ++;
+            m2[v2[i]] ++;
+        }
+        return m1 == m2;
+    }
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **思路**：
+
+  * 优化了排序步骤
+  * 将“字母 → 频次” map 转换为“频次 → 出现次数” map
+  * 利用 unordered\_map 比较两个频率分布是否一致
+* **优点**：
+
+  * 不用排序，理论上更快
+  * 保留重复频次信息
+  * 时间复杂度仍为 O(n)，空间 O(σ) = 常数级
+
+---
+
+### ✅ 总结
+
+你一共修改了 **六个版本**：
+
+1. **第一版**：只检查字符集合
+2. **第二版**：加入频次 set，比对频次集合（有重复信息丢失问题）
+3. **第三版**：vector + 排序，正确处理重复频次
+4. **第四版**：尝试用 map 遍历 vector，写成 `map2.count(c)` 出错
+5. **数组排序版**：用数组统计频次，排序比较 → 最优解之一
+6. **数组不排序版**：用频次分布 map（unordered\_map\<int,int>）比较，避免排序
+
+---
+
+如果你愿意，我可以画一张 **流程图**，把每个版本的逻辑改进路径可视化，能更直观地看出优化演进。
+
+你希望我画吗？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 198. House Robber
+
+你是一个专业的小偷，计划在一条街道上偷窃房屋。每个房屋都藏有一定数量的金钱，但有一个约束条件：相邻的房屋装有相互连通的安保系统。如果两间相邻的房屋在同一晚被闯入，系统会自动报警。
+
+给定一个整数数组 nums，其中 nums[i] 表示第 i 间房屋的金额，返回你今晚在不触发警报的情况下能够偷窃到的最大金额。
+
+我们来系统地总结一下你这道 **House Robber** 题的解题过程和思路，以及出现的小问题和改进点，让你的理解更清晰：
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+---
+
+### 1️⃣ 你的解题过程
+
+1. **判断特殊情况**
+
+   * 你写了：
+
+   ```cpp
+   if (nums.size() == 0) return 0;
+   ```
+
+   ✅ 对空数组做了处理，这是正确的。
+
+2. **初始化 dp 数组**
+
+   * 你定义了：
+
+   ```cpp
+   vector<int> dp(nums.size(), 0);
+   dp[0] = nums[0];
+   dp[1] = max(nums[0], nums[1]);
+   dp[2] = max(nums[0] + nums[2], nums[1]);
+   ```
+
+   ✅ 你能想到要初始化前几个元素的 dp，这是动态规划的标准做法。
+   ⚠️ 但是 **单独处理 dp\[2]** 并不必要，统一循环可以更简洁。
+
+3. **编写状态转移公式**
+
+   * 你写了：
+
+   ```cpp
+   for (int i = 3; i < nums.size(); i++) {
+       dp[i] = max(dp[i-2] + nums[i], dp[i-2] + nums[i-1]);
+   }
+   ```
+
+   * 你的思路：
+
+     > 想比较“抢 i 房子” vs “抢 i-1 房子”
+   * 出现的问题：
+
+     * 第二项 `dp[i-2] + nums[i-1]` 错误，应该用 `dp[i-1]` 表示“不抢 i 房子”的最大收益。
+   * 正确公式是：
+
+     ```cpp
+     dp[i] = max(dp[i-1], dp[i-2] + nums[i]);
+     ```
+
+4. **返回结果**
+
+   ```cpp
+   return dp[nums.size() - 1];
+   ```
+
+   ✅ 正确。
+
+---
+
+### 2️⃣ 你的思路总结
+
+* **核心想法**：动态规划
+
+  * 定义 `dp[i]` 表示“前 i 个房子能抢到的最大金额”。
+  * 对每个房子，有两个选择：
+
+    1. 抢当前房子 → 累加 `dp[i-2] + nums[i]`
+    2. 不抢当前房子 → 取 `dp[i-1]`
+* **差一点点理解**：
+
+  * 你已经抓住“抢当前房子要跳过前一个房子”，但第二项选错了索引，导致逻辑错误。
+
+---
+
+### 3️⃣ 改进点 / 反思
+
+1. **状态转移公式**
+
+   * 将第二项改成 `dp[i-1]`，就完全正确。
+2. **边界处理**
+
+   * dp\[2] 可以通过循环统一处理，不必单独写。
+3. **优化空间**
+
+   * 可以用两个变量代替 dp 数组，进一步节省空间（滚动数组优化）。
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) return 0;
+        if (n == 1) return nums[0];
+
+        vector<int> dp(n, 0);
+        dp[0] = nums[0];
+        dp[1] = max(nums[0], nums[1]);
+        for (int i = 2; i < n; i++) {
+            dp[i] = max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+        return dp[n - 1];
+    }
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+💡 总结一句话：
+
+> 你已经理解了动态规划核心思想（抢 / 不抢），只是索引选择上差一点点，理解正确公式后，整题就完全清楚了。
+
+---
+
+如果你愿意，我可以画一张 **房子 + dp\[i] 递推图**，直观显示你最初的错误和正确公式之间的差别，让你的“差一点点”一目了然。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>

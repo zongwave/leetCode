@@ -33,6 +33,9 @@
   * [2130. 链表最大孪生数之和](#2130-maximum-twin-sum-of-a-linked-list)
   * [1657. 判断两个字符串是否接近](#1657-determine-if-two-strings-are-close)
   * [198. 打家劫舍](#198-house-robber)
+  * [1456. 最大元音数](#1456-maximum-number-of-vowels-in-a-substring-of-given-length)
+  * [104. 二叉树最大层数](#104-maximum-depth-of-binary-tree)
+  * [872. 叶子相似树](#872-leaf-similar-trees)
 
 ---
 
@@ -2968,3 +2971,552 @@ public:
 ---
 
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+---
+
+## 1456. Maximum Number of Vowels in a Substring of Given Length
+
+
+好的 👍 我帮你把整个解题历程写成一份总结，把你写过的逻辑片段也嵌进去，最后附上一个小口诀。这样更完整，也能帮助你加深记忆。
+
+---
+
+
+### 1. **第一版 —— 读题错误，找连续元音段**
+
+当时误把题目理解成“在长度为 k 的子串里找**最长连续元音段**”，于是写了下面的逻辑：
+
+```cpp
+while (left < s.size()) {
+    while (left < s.size() && !isVowel(s[left])) {
+        left++;
+    }
+    int curr = left + 1;
+    int vowelCount = 1;   // 遇到元音，先加 1
+    while (curr < s.size() && isVowel(s[curr]) && vowelCount < k) {
+        vowelCount++;
+        curr++;
+    }
+    if (vowelCount > maxVowel) {
+        maxVowel = vowelCount;
+    }
+    left = curr + 1;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+* **问题**：逻辑复杂，要特殊处理第一个元音，还要跳过辅音。
+* **错误根源**：题目其实要求的是**固定长度 k 的子串内的元音数**，不一定要连续。
+
+---
+
+### 2. **第二版 —— 优化写法，但仍是错的方向**
+
+把“先+1”放进循环里，逻辑稍微自然些：
+
+```cpp
+int curr = left;
+int vowelCount = 0;
+while (curr < s.size() && isVowel(s[curr]) && vowelCount < k) {
+    vowelCount++;
+    curr++;
+}
+```
+
+* **改进**：写法简洁，避免了特殊处理第一个元音。
+* **问题**：本质还是在找“连续元音”，依然不符合题意。
+
+---
+
+### 3. **第三版 —— 读题修正，但实现是 O(n·k)**
+
+终于意识到应该检查 **所有长度为 k 的子串**，写了一个暴力检查：
+
+```cpp
+while (right < s.size()) {
+    int vowelCount = 0;
+    for (int i = 0; i < k; i++) {
+        if (isVowel(s[left + i])) {
+            vowelCount++;
+        }
+    }
+    maxVowel = max(maxVowel, vowelCount);
+    left++;
+    right++;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+* **优点**：逻辑正确，能通过测试。
+* **问题**：每次都重新统计窗口，时间复杂度 **O(n·k)**，大数据会超时。
+
+---
+
+### 4. **第四版 —— 滑动窗口尝试，但实现有 bug**
+
+尝试用滑动窗口，只增减计数：
+
+```cpp
+int vowelCount = 0;
+while (right - left < k) {
+    if (isVowel(s[right++])) {
+        vowelCount++;
+    }
+}
+// 窗口滑动
+left++;
+right++;
+if (isVowel(s[left])) vowelCount--;
+if (isVowel(s[right])) vowelCount++;
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **问题 1**：`vowelCount` 每次循环都重新置 0，导致窗口计数无法累计。
+* **问题 2**：初始化窗口漏掉 `s[0]`。
+* **问题 3**：`right++` 可能越界。
+* **结果**：思路对了，但实现不稳定。
+
+---
+
+### 5. **最终优化版 —— 正确的滑动窗口**
+
+标准写法如下：
+
+```cpp
+class Solution {
+public:
+    int maxVowels(string s, int k) {
+        int n = s.size();
+        int vowelCount = 0;
+        for (int i = 0; i < k; i++) {
+            if (isVowel(s[i])) {
+                vowelCount ++;
+            }
+        }
+        int maxVowel = vowelCount;
+
+        for (int right = k; right < n; right++) {
+            if (isVowel(s[right])) vowelCount ++;
+            if (isVowel(s[right - k])) vowelCount --;
+            maxVowel = max(maxVowel, vowelCount);
+        }
+        return maxVowel;
+    }
+
+private:
+    bool isVowel(char c) {
+        return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
+    }
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* **复杂度**：O(n)，每个字符只进出窗口一次。
+* **逻辑**：清晰简洁，完全符合题意。
+
+---
+
+### 🎯 总结与反思
+
+* **第一版**：题意理解错 → 找连续元音段 → 逻辑复杂。
+* **第二版**：写法更简洁，但方向仍错。
+* **第三版**：终于理解题意 → 暴力检查 → 正确但低效。
+* **第四版**：尝试滑动窗口 → 思路对，代码有 bug。
+* **最终版**：标准滑动窗口 → O(n)，简洁高效。
+
+---
+
+### 📝 小口诀
+
+**“固定长度子串 → 想滑动窗口”**
+
+* 长度固定：窗口左右一起动；
+* 计数维护：移出减，移入加；
+* 每次更新最大值。
+
+---
+
+要不要我帮你再画一张 **窗口在 `s="abciiidef", k=3` 上的移动表格**，把每一步 `窗口内容` 和 `vowelCount` 展示出来，加到这个总结里？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 104. Maximum Depth of Binary Tree
+
+[![二叉树深度](diagram/bfs-tree.jpg)](https://raw.githubusercontent.com/zongwave/leetcode/main/top75/diagram/bfs-tree.jpg)
+
+你这段代码写得很标准 👍，这是二叉树深度（最大深度）的典型 **DFS 递归** 解法。我们来分析一下：
+
+---
+
+### ✅ 逻辑拆解
+
+```cpp
+int maxDepth(TreeNode* root) {
+    if (!root) return 0;  // 空树深度为 0
+    
+    TreeNode* leftTree = root->left;
+    TreeNode* rightTree = root->right;
+    int leftDepth = maxDepth(leftTree);    // 左子树最大深度
+    int rightDepth = maxDepth(rightTree);  // 右子树最大深度
+
+    return max(leftDepth, rightDepth) + 1; // 当前节点的深度 = 1 + 子树最大深度
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+### 思路：
+
+1. **终止条件**：`root == nullptr` → 深度为 0。
+2. **递归公式**：
+
+   * 左子树深度 `leftDepth = maxDepth(root->left)`
+   * 右子树深度 `rightDepth = maxDepth(root->right)`
+   * 当前深度 `= max(leftDepth, rightDepth) + 1`。
+
+这是二叉树深度的最经典写法。
+
+---
+
+### 🔧 可以优化的小点
+
+* 你写的 `TreeNode* leftTree = root->left;` 和 `TreeNode* rightTree = root->right;` 其实没必要，可以直接传进去：
+
+```cpp
+int maxDepth(TreeNode* root) {
+    if (!root) return 0;
+    return 1 + max(maxDepth(root->left), maxDepth(root->right));
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+这样更简洁，逻辑一目了然。
+
+---
+
+### ⏱️ 复杂度
+
+* 时间复杂度：**O(n)**，每个节点访问一次。
+* 空间复杂度：**O(h)**，h 是树的高度（递归栈深度）。最坏情况（链表状）O(n)，最好情况（完全平衡）O(log n)。
+
+---
+
+📌 这个题的 DFS 解法很经典，其实还有 **BFS（层序遍历）** 的解法，用队列逐层统计深度。
+要不要我帮你写一下 **BFS 的版本**，方便你对比两种思路？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 872. Leaf-Similar Trees
+
+[![叶子相似树](diagram/leaf-similar-1.jpg)](https://raw.githubusercontent.com/zongwave/leetcode/main/top75/diagram/leaf-similar-1.jpg)
+
+
+你写的这道 **Leaf-Similar Trees** 思路是对的 👍：
+
+* 遍历两棵树，收集叶子节点值序列；
+* 比较两个序列是否相等。
+
+但是代码实现上有一些小问题，导致运行结果可能不对。我们拆开看：
+
+---
+
+### 🔎 代码问题
+
+### 1. `vector<int> leaves` 按值传递
+
+你在 `leaf` 函数里：
+
+```cpp
+vector<int> leaf(TreeNode* root, vector<int> leaves)
+```
+
+这里 `leaves` 是 **按值传递**，每次递归调用都会复制一份，子递归对 `leaves` 的修改不会影响父函数。
+➡️ 导致最后结果 `leaves` 可能始终是空的，或者丢失部分数据。
+
+解决方法：
+
+* 用 **引用传递**（`vector<int>& leaves`）。
+
+---
+
+### 2. 递归逻辑有点冗余
+
+你写了很多 `if-else`，其实完全可以统一写：
+
+* 如果当前是叶子 → 直接 push
+* 否则递归左右子树
+
+---
+
+### ✅ 修改后的代码
+
+```cpp
+class Solution {
+public:
+    bool leafSimilar(TreeNode* root1, TreeNode* root2) {
+        vector<int> leaves1, leaves2;
+        dfs(root1, leaves1);
+        dfs(root2, leaves2);
+        return leaves1 == leaves2;
+    }
+
+private:
+    void dfs(TreeNode* root, vector<int>& leaves) {
+        if (!root) return;
+        if (!root->left && !root->right) {
+            leaves.push_back(root->val);
+            return;
+        }
+        dfs(root->left, leaves);
+        dfs(root->right, leaves);
+    }
+};
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 📌 对比你的代码
+
+* 你写的核心思路是对的，只是因为 **传值问题** 导致叶子序列收集不到。
+* 递归里分了太多 `if-else`，其实逻辑可以简化成「叶子就 push，否则递归左右」。
+
+---
+
+### ⏱️ 复杂度
+
+* 时间复杂度：O(n + m)，n 和 m 分别是两棵树的节点数。
+* 空间复杂度：O(h)，递归栈深度，h 是树的高度。
+
+---
+
+👉 总结：你这题 **思路对了，但实现有 bug**（主要是 `vector` 传值）。
+如果当时能想到「vector 应该传引用」，代码就能跑通了。
+
+要不要我帮你写一个 **输入输出例子 + 你的代码运行过程**，演示为什么你现在的实现会丢掉叶子节点？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+做了两道DFS题，感觉在写递归算法时，只需要把注意力集中在当前一层的逻辑上就可以了，如果多想上下层的关联，反而会把逻辑写错或者逻辑变得混乱
+
+
+你这个体会 **太到位了！👏**
+这正是写递归时的核心思维方式，很多人一开始都会「想多了」，结果把代码绕复杂。
+
+---
+
+### 🔹 为什么递归要只想“一层逻辑”？
+
+写递归可以这么理解：
+
+* **当前层要做什么？**
+  → 处理当前节点（或区间、子问题）。
+* **剩下的事情交给子递归**
+  → 不用操心子递归怎么做，它会正确完成（就像你调用一个黑盒函数）。
+
+如果你一边写「这一层」的逻辑，又一边担心「上一层/下一层怎么配合」，很容易陷入混乱。
+
+比如二叉树题：
+
+### 示例 1：最大深度
+
+```cpp
+int maxDepth(TreeNode* root) {
+    if (!root) return 0;
+    return 1 + max(maxDepth(root->left), maxDepth(root->right));
+}
+```
+
+* **这一层的逻辑**：
+  我的深度 = 1 + 左右子树深度的最大值。
+* **不用想**：子树是怎么算出来的。
+
+---
+
+### 示例 2：叶子相似的树
+
+```cpp
+void dfs(TreeNode* root, vector<int>& leaves) {
+    if (!root) return;
+    if (!root->left && !root->right) {
+        leaves.push_back(root->val); // 当前节点是叶子 → 记录
+        return;
+    }
+    dfs(root->left, leaves);   // 交给左子树
+    dfs(root->right, leaves);  // 交给右子树
+}
+```
+
+* **这一层的逻辑**：
+  如果自己是叶子，就收集；不是叶子，就让子树继续干。
+* **不用想**：子树会不会收集好它的叶子，反正我只管丢任务下去。
+
+---
+
+### 🔹 小口诀
+
+**“写递归，只想这一层；子问题交给函数自己解决。”**
+这也是所谓的 **“递归的函数定义要信任自己”**。
+
+---
+
+📌 你已经悟到关键了：递归就是分工，
+**上层只关心怎么用，下层只关心怎么做**。
+
+要不要我帮你把这两道 DFS 题，整理成一个「递归写法的统一套路总结」？这样你以后写别的递归题就能直接套用。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+好，我来帮你整理一个 **递归写法的统一套路总结**，结合你做的两道 DFS 题（最大深度、叶子相似的树），附带小口诀，方便以后快速回忆。
+
+---
+
+### 🌲 递归写法统一套路总结
+
+### 1. 明确递归函数的「功能定义」
+
+写递归前，先问自己一句话：
+
+> 这个函数的输入是什么？返回值代表什么？
+
+例如：
+
+* `maxDepth(TreeNode* root)` → 输入一棵树，返回它的最大深度。
+* `dfs(TreeNode* root, vector<int>& leaves)` → 输入一棵树，把它的叶子收集进 `leaves`。
+
+**一旦定义清楚，就要信任它能完成这个功能。**
+
+---
+
+### 2. 写递归的「终止条件」
+
+递归必须有出口，否则无限调用。
+典型写法：
+
+```cpp
+if (!root) return 0;          // 空树 → 深度 0
+if (!root) return;            // 空树 → 不收集叶子
+```
+
+---
+
+### 3. 当前层要做的逻辑
+
+只思考「当前层」要做什么：
+
+* 是否处理当前节点？
+* 还是把任务交给子节点？
+
+### 示例 1：最大深度
+
+```cpp
+return 1 + max(maxDepth(root->left), maxDepth(root->right));
+```
+
+👉 当前层逻辑：自己深度 = 1 + 子树深度的最大值。
+
+### 示例 2：叶子相似的树
+
+```cpp
+if (!root->left && !root->right) {
+    leaves.push_back(root->val); // 当前节点是叶子 → 收集
+    return;
+}
+```
+
+👉 当前层逻辑：如果自己是叶子就收集，否则让子树继续。
+
+---
+
+### 4. 把任务交给子递归
+
+递归最核心的一点：
+**不要关心子递归怎么实现，假设它能正确返回结果。**
+
+* `maxDepth(root->left)` → 假设能给你左子树的深度。
+* `dfs(root->left, leaves)` → 假设能帮你收集左子树的叶子。
+
+---
+
+### 5. 组合结果 / 返回答案
+
+最后一步，把当前层和子递归的结果组合起来。
+
+* 最大深度：
+
+```cpp
+return 1 + max(leftDepth, rightDepth);
+```
+
+* 收集叶子：
+
+```cpp
+dfs(root->left, leaves);
+dfs(root->right, leaves);
+```
+
+---
+
+### 📌 小口诀
+
+👉 **“写递归，只想这一层；子问题交给函数自己解决。”**
+
+再补一句：
+👉 **“定义清晰，出口明确，当前逻辑，子递归搞定。”**
+
+---
+
+### 🎯 总结
+
+递归题套路化以后，其实就四步：
+
+1. 定义函数功能（输入/输出是什么）
+2. 写终止条件
+3. 当前层逻辑
+4. 递归调用子问题，组合答案
+
+---
+
+要不要我帮你把这个套路，用 **一个统一的代码模板**（比如泛用的二叉树 DFS 递归写法）写出来，你以后套题会更快？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+

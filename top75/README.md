@@ -42,6 +42,8 @@
   * [1679. 和为 K 的数对的最大数量](#1679-max-number-of-k-sum-pairs)
   * [238. 除自身以外数组的乘积](#238-product-of-array-except-self)
   * [1318. 最小反转位使得a或b等于c](#1318-minimum-flips-to-make-a-or-b-equal-to-c)
+  * [2390. 从字符串中移除*](#2390-remove-stars-from-a-string)
+  * [735. 行星碰撞](#735-asteroid-collision)
 
 ---
 
@@ -3582,8 +3584,8 @@ public:
             while (countZero > k) {
                 if (nums[left] == 0) {
                     countZero --;
-                    left ++;
                 }
+                left ++;
             }
             maxOnes = max(maxOnes, right - left + 1);
             right ++;
@@ -4317,6 +4319,9 @@ public:
             } else {
                 if (abit + bbit == 0) opts += 1;
             }
+            aa >>= 1;
+            bb >>= 1;
+            cc >>= 1;
         }
         return opts;
     }
@@ -4370,3 +4375,297 @@ public:
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
 
 ---
+
+## 2390 Remove Stars From a String
+
+---
+
+### 题目简介
+
+LeetCode 2390 **Remove Stars From a String**：
+给定一个只包含小写字母和 `*` 的字符串，每个 `*` 表示要删除它前面的一个字母（保证有字母可删）。返回最终处理后的字符串。
+
+---
+
+### 我的解题过程
+
+### 1. 第一版：用 `stack<char>`
+
+* **思路**：
+  很直观，`*` 就意味着“弹掉栈顶一个字母”，所以我直接用 `stack<char>`：
+
+  * 遍历字符串，如果是普通字母就 `push`；
+  * 如果是 `*` 就 `pop`；
+  * 最后从栈里拼接出结果。
+* **问题**：
+  在提交测试时，出现 **OOM（内存超限）**。
+
+---
+
+```cpp
+
+class Solution {
+public:
+    string removeStars(string s) {
+        stack<char> word;
+        for (char c : s) {
+            if (!word.empty() && c == '*') {
+                word.pop();
+            }
+            if (c != '*') {
+                word.push(c);
+            }
+        }
+        string res;
+        while (!word.empty()) {
+            res = word.top() + res;
+            word.pop();
+        }
+        return res;
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 2. 遇到的困惑
+
+* 当时不理解，逻辑没错，为什么内存爆了？
+* 仔细分析后发现：
+
+  1. `stack<char>` 底层是 `deque`，对大数据处理时分段存储和内存分配效率不佳。
+  2. 最终拼接结果时，我是通过 `res = word.top() + res;` 不断构造新字符串，导致大量重复拷贝。
+     👉 所以在大输入规模下，内存和时间消耗都成倍放大，导致 OOM。
+
+### 3. 第二版：改用 `string`
+
+* **思路**：
+  直接用 `string res` 当作栈：
+
+  * 普通字母用 `push_back` 加到末尾。
+  * `*` 就执行 `pop_back`。
+  * 遍历完后 `res` 就是结果，不需要额外反转或拼接。
+* **效果**：
+
+  * 代码更短更直观。
+  * 内存连续分配，扩容机制高效。
+  * 通过测试，不会 OOM。
+
+---
+
+```cpp
+class Solution {
+public:
+    string removeStars(string s) {
+        string res;
+        for (char c : s) {
+            if (!res.empty() && c == '*') {
+                res.pop_back();
+            }
+            if (c != '*') {
+                res.push_back(c);
+            }
+        }
+        return res;
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+### 经验总结
+
+1. **能用 `string`/`vector` 就别用 `stack<char>`**，因为 `stack` 是容器适配器，不适合大规模字符操作。
+2. **避免重复拷贝字符串**：像 `res = word.top() + res;` 这样的写法非常低效。
+3. **写代码时多想一下数据结构的底层实现**：
+
+   * `stack`（基于 `deque`） → 分段存储，不适合大规模连续操作。
+   * `string`（基于连续内存） → 更适合模拟栈。
+
+---
+
+要不要我帮你顺便整理一个“小口诀”，让你以后遇到类似“字符串模拟栈”的题时，能马上想到用 `string` 而不是 `stack<char>`？
+
+---
+好的 👍，我来帮你写个小口诀，方便以后快速联想：
+
+---
+
+### 小口诀：字符串模拟栈
+
+**“删加删加，用串当栈；
+能退能进，不用真栈。”**
+
+---
+
+### 拆解理解
+
+1. **删加删加**：
+
+   * `*` → 删（`pop_back`）
+   * 普通字母 → 加（`push_back`）
+
+2. **用串当栈**：
+
+   * 直接用 `string` 或 `vector<char>` 作为容器，比 `stack<char>` 高效。
+
+3. **能退能进**：
+
+   * `pop_back`、`push_back` 正好对应栈的 `pop`、`push`。
+
+4. **不用真栈**：
+
+   * 避免 `stack<char>` 带来的额外内存和性能开销。
+
+---
+
+这样你以后遇到 **“带删除符的字符串处理”** 类题，第一时间就能想到：
+👉 不要写 `stack<char>`，直接上 `string`！
+
+要不要我帮你再整理一个「字符串模拟栈」的**代码骨架**，像模版一样以后直接套用？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 735. Asteroid Collision
+
+---
+
+### 题目简介
+
+LeetCode **735. Asteroid Collision**：
+给定一个整数数组 `asteroids`，表示一行小行星，绝对值代表大小，正负号代表方向（正数向右，负数向左）。当两个小行星相向运动时会碰撞，较小的会爆炸，如果相等则同时爆炸。输出最终所有小行星的状态。
+
+---
+
+### 你的解题与思考过程
+
+### 1. **最初的思路（错误版本）**
+
+* 你一开始尝试用数组原地修改的方式：
+
+  * 从后往前比较相邻两个数，如果方向不同且相撞，就 `pop_back()` 或替换。
+* 遇到问题：这种方法只能处理 **相邻的两个**，没法处理连续碰撞（一个小行星可能同时和多个前面的碰撞），逻辑很乱。
+
+### 2. **想到用栈**
+
+* 你意识到需要保存“稳定的小行星状态”，于是引入 **栈**。
+* 最初的 stack 版本：只检查栈顶元素与当前元素是否相撞。
+* 问题：
+
+  * 如果当前小行星比栈顶大，被栈顶撞碎后，你会立即 `push(a)`，但其实它可能还会继续和下一个栈顶碰撞，逻辑不对。
+  * 也就是没处理好 **连续碰撞**。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+### 3. **引入 while 循环 + alive 标志**
+
+* 你修改了写法：
+
+  ```cpp
+  bool alive = true;
+  while (alive && !res.empty() && a < 0 && res.top() > 0) { ... }
+  if (alive) res.push(a);
+  ```
+* 核心改进：
+
+  * `while` 保证 **当前小行星能一直和栈里的多个元素碰撞**。
+  * `alive` 标志保证 **只有没被撞毁的才会进入栈**。
+* 这个版本已经完全正确。
+
+### 4. **理解条件 (a < 0 && res.top() > 0)**
+
+* 你一开始写成 `a * res.top() < 0`，表示方向不同。
+* 后来发现并不完全正确，因为：
+
+  * 如果 `res.top() < 0`（左移），`a > 0`（右移），它们背对背移动，不会相撞。
+  * 只有 `res.top() > 0` 且 `a < 0` 时才会相撞。
+* 于是修正为 `a < 0 && res.top() > 0`，这才和题意完全对应。
+
+### 5. **栈 or vector**
+
+* 你最开始用 `stack<int>`，最后转成 `vector` 再 `reverse`。
+* 后来意识到可以直接用 `vector<int> res` 当栈来用（`push_back` / `pop_back`），就不用再反转，写法更简洁。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+```cpp
+class Solution {
+public:
+    vector<int> asteroidCollision(vector<int>& asteroids) {
+        vector<int> res;
+        for (int a : asteroids) {
+            bool alive = true;
+            while (!res.empty() && alive && a < 0 && res.back() > 0) {
+                if (abs(a) > abs(res.back())) {
+                    res.pop_back();
+                } else if (abs(a) == abs(res.back())) {
+                    res.pop_back();
+                    alive = false;
+                } else {
+                    alive = false;
+                }
+            }
+            if (alive) res.push_back(a);
+        }
+        return res;
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 困住你的难点 & 思考过程的痛点
+
+1. **如何处理连续碰撞**：一开始你只考虑了栈顶，没意识到要 `while` 反复比较。
+2. **方向条件**：`a * res.top() < 0` 看似对，其实没抓住题目的关键条件（只有 `右 + 左` 才会撞）。
+3. **数据结构选择**：开始用数组硬写，容易错。后来改用 `stack/vector` 才自然解决。
+
+---
+
+### 为什么是 Medium 难度
+
+* **思路转弯点**：题目表面是模拟，其实考的是 **栈的使用**，需要想到“保存稳定状态 + 逐个消解”。
+* **细节容易错**：
+
+  * 连续碰撞要 `while`。
+  * 方向判断要准确。
+  * 数据结构的选用影响写法简洁度。
+* 对初学者来说，容易掉进“暴力修改数组”的坑，导致逻辑混乱。
+
+---
+
+✅ **总结一句话**：
+你从 **数组硬模拟 → 简单 stack → 正确 stack+while → 条件修正 → vector 优化**，逐步逼近最终解法。关键难点在于 **连续碰撞** 和 **正确理解方向条件**。
+
+---
+
+要不要我帮你再写一个 **小口诀**，方便你以后复习的时候快速回忆？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>

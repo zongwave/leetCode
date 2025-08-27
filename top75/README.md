@@ -46,6 +46,10 @@
   * [735. 行星碰撞](#735-asteroid-collision)
   * [443. 压缩字符串](#443-string-compression)
   * [1448. 统计二叉树好节点数](#1448-count-good-nodes-in-binary-tree)
+  * [700. 在查找二叉树中查找](#700-search-in-a-binary-search-tree)
+  * [435. 不重叠区间](#435-non-overlapping-intervals)
+  * [739. 每日温度](#739-daily-temperatures)
+  * [199. 二叉树右侧节点](#199-binary-tree-right-side-view)
 
 ---
 
@@ -4952,3 +4956,494 @@ public:
 ---
 
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 700. Search in a Binary Search Tree
+
+---
+
+### 题目简介
+
+这道题 **Search in a Binary Search Tree** 要求在一棵二叉树中找到值等于 `val` 的节点。如果存在，就返回以该节点为根的子树；如果不存在，就返回 `nullptr`。题目原本是针对 **二叉搜索树 (BST)** 的，但其实你写的解法是普通的二叉树搜索，也能通过。
+
+---
+
+### 我的解答和思考过程总结
+
+1. **最初思路**
+
+   * 我没利用 BST 的性质（左子树比根小，右子树比根大），而是采用了 **普通的递归搜索**：
+
+     * 如果当前节点值等于目标值，直接返回该节点；
+     * 否则，先去左子树递归查找；
+     * 如果左子树找到结果，就返回；
+     * 如果左子树没找到，再去右子树递归查找；
+     * 都没找到则返回 `nullptr`。
+   * 这种写法虽然效率不高，但逻辑正确，等价于深度优先遍历。
+
+2. **代码实现上的特点**
+
+   * 我一开始用了一个中间变量 `res` 来存储递归结果，写法是：
+
+     ```cpp
+     res = searchBST(root->left, val);
+     if (res) return res;
+     else {
+         res = searchBST(root->right, val);
+         if (res) return res;
+     }
+     return res;
+     ```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+   * 这种写法能跑通，但显得冗余。
+
+3. **优化与简化**
+
+   * 后来发现，中间变量 `res` 完全没必要，因为递归调用本身就是返回值。
+   * 可以改成更简洁的版本：
+
+     ```cpp
+     TreeNode* left = searchBST(root->left, val);
+     if (left) return left;
+     return searchBST(root->right, val);
+     ```
+   * 逻辑清晰，而且避免了重复计算。
+
+4. **思考过程中的困惑**
+
+   * 起初我以为必须用 `res` 保存结果再返回，但其实递归调用的返回值已经能直接使用。
+   * 这个问题暴露了我在写递归时的“多余保险心态”，不太敢直接返回递归调用结果。通过对比，我学到递归函数的返回值就是天然的状态传递工具。
+
+---
+
+```cpp
+class Solution {
+public:
+    TreeNode* searchBST(TreeNode* root, int val) {
+        if (!root) return nullptr;
+
+        if (root->val == val) return root;
+
+        if (root->val < val) {
+            return searchBST(root->right, val);
+        } else {
+            return searchBST(root->left, val);
+        }
+    }
+}
+
+```
+
+### 总结
+
+* 我最开始写出了一个正确但冗余的解法，用 `res` 保存递归结果。
+* 在优化过程中，我逐渐意识到递归调用的返回值就是最终答案，可以直接返回，不需要额外的中间变量。
+* 虽然这题原本是 BST，可以用更高效的方法（根据大小判断走左子树或右子树），但我用普通递归搜索依然 AC 了。
+* 收获：**写递归要敢于直接利用返回值，避免不必要的中间变量。**
+
+---
+
+要不要我顺便帮你写一下 **利用 BST 性质的最优解**（只走一边，O(h) 时间复杂度），这样你就能对比两种思路了？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 435. Non-overlapping Intervals
+
+好的，我们来系统总结一下 **435. Non-overlapping Intervals** 这道题，包括题目介绍、分析思路，以及你解答的优缺点。
+
+---
+
+### 1️⃣ 题目简介
+
+**题目**：给定一个由区间组成的数组 `intervals`，每个区间为 `[start, end]`，要求移除最少数量的区间，使剩下的区间互不重叠。
+
+* **注意**：两个区间只在端点相接（如 `[1,2]` 和 `[2,3]`）不算重叠。
+* **输出**：最少需要移除的区间数量。
+
+**示例**：
+
+```
+输入: [[1,2],[2,3],[3,4],[1,3]]
+输出: 1
+解释: 移除 [1,3]，其余区间不重叠。
+```
+
+---
+
+### 2️⃣ 题目类型与思路分析
+
+* **类型**：区间调度问题（Interval Scheduling）的变体
+
+  * 经典问题：选择最多的不重叠区间
+  * 本题：移除最少区间 = 总区间数 − 最大不重叠区间数
+* **解法选择**：
+
+  1. **贪心算法**（推荐）：
+
+     * 按 **结束时间排序**
+     * 每次选择结束最早且不重叠的区间
+     * 遍历剩余区间，若重叠则计数删除
+     * 时间复杂度 O(n log n)，空间复杂度 O(1)
+  2. **动态规划**（可行但效率低）：
+
+     * 排序后，`dp[i]` 表示前 i 个区间能选择的最大不重叠数
+     * 转移方程：`dp[i] = max(dp[i-1], dp[j]+1)`，j 是前 i 个区间中最后一个不重叠的
+     * 时间复杂度 O(n²) 或 O(n log n) 用二分查找
+
+---
+
+### 3️⃣ 你的解答总结
+
+```cpp
+class Solution {
+public:
+    int eraseOverlapIntervals(vector<vector<int>>& intervals) {
+        if (intervals.empty()) return 0;
+
+        sort(intervals.begin(), intervals.end(), [](const vector<int>& a, const vector<int>& b) {
+            return (a[1] < b[1]);
+        });
+        
+        int overlap = 0;
+        int end = intervals[0][1];
+        for (int i = 1; i < intervals.size(), i++) {
+            if (intervals[i][0] < end) {
+                overlap ++;
+            } else {
+                end = intervals[i][1];
+            }
+        }
+        return overlap;
+    }
+};
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+### ✅ 优点
+
+1. **贪心思想清晰**：按结束时间排序，遍历判断重叠 → 正确且高效。
+2. **时间复杂度优**：O(n log n) 排序 + O(n) 遍历。
+3. **代码简洁**：逻辑直接，易读性好。
+
+### ⚠ 小改进建议
+
+1. **空数组检查**：
+
+```cpp
+if (intervals.empty()) return 0;
+```
+
+* 防止 `intervals[0][1]` 越界。
+
+2. **lambda 用引用**：
+
+```cpp
+[](const vector<int>& a, const vector<int>& b)
+```
+
+* 避免不必要的拷贝。
+
+3. **注释增强可读性**：
+
+* 面试或教学时说明 `overlap` 计数逻辑，会更直观。
+
+---
+
+### 4️⃣ 总结
+
+* 这道题是 **经典区间调度问题的最小删除版本**。
+* **贪心策略**（按结束时间选择不重叠区间）是最优且高效解法。
+* **你的代码实现正确**，逻辑清晰，唯一的小点是可以加空数组检查和引用优化。
+* 最终结果与题意完全一致，LeetCode 可直接提交。
+
+---
+
+如果你愿意，我可以帮你画一个 **从你代码角度出发的可视化时间轴示意图**，更直观展示 overlap 的计数过程。
+
+你希望我画吗？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 739. Daily Temperatures
+
+好的，我们来整理一下你在 **739. Daily Temperatures** 这道题上的解题和思考过程，总结成教材式或笔记式的条理清单。
+
+---
+
+### 题目简介
+
+**739. Daily Temperatures**：给定一个整数数组 `temperatures`，表示每天的温度，要求返回数组 `answer`，其中 `answer[i]` 表示第 `i` 天需要等待多少天才能遇到比当天温度高的日子；如果未来没有更高温度，则为 0。
+
+**示例**：
+
+```
+输入: [73,74,75,71,69,72,76,73]
+输出: [1,1,4,2,1,1,0,0]
+```
+
+本题属于 **单调栈 / 下一个更大元素（Next Greater Element）** 的典型应用。
+
+---
+
+### 你的解题和思考过程总结
+
+### 1️⃣ 初步理解与尝试
+
+* 你明确了题目要求：计算每一天到下一个更高温度的天数。
+
+* 你最初尝试用 `stack<int>` 存储温度值本身：
+
+  ```cpp
+  wait.push(temperatures[i]);
+  ```
+
+* 你在弹栈更新答案时使用了：
+
+  ```cpp
+  answer[i - 1] = i;
+  ```
+
+* 问题发现：
+
+  * 栈里没有索引信息，无法正确计算 `i - idx`。
+  * 更新答案时，使用 `i - 1` 不准确，导致结果错误。
+
+---
+
+### 2️⃣ 思路转变
+
+* 通过分析，你意识到 **栈中应该存储索引 `idx`** 而不是温度值。
+* 原理理解：
+
+  1. 栈存索引 → 可以在原数组中查找温度。
+  2. 弹栈时用当前索引 `i` 减去栈顶索引 `idx`，得到等待天数。
+  3. 栈始终保持 **单调递减**，保证每个元素只需弹出一次即可找到第一个更大温度。
+* 栈顶元素被弹出更新答案，不会影响更早入栈元素的计算，因为单调性保证了顺序正确。
+
+---
+
+### 3️⃣ 核心算法模板（单调栈）
+
+```cpp
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+    int n = temperatures.size();
+    vector<int> answer(n, 0);
+    stack<int> wait; // 存索引
+
+    for (int i = 0; i < n; i++) {
+        while (!wait.empty() && temperatures[i] > temperatures[wait.top()]) {
+            int idx = wait.top();
+            wait.pop();
+            answer[idx] = i - idx; // 计算等待天数
+        }
+        wait.push(i); // 当前索引入栈
+    }
+    return answer;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+* 时间复杂度：O(n)
+* 空间复杂度：O(n)
+
+---
+
+### 4️⃣ 思考总结
+
+1. **问题定位**：
+
+   * 本题属于“下一个更大元素”问题。
+   * 栈里存索引，而非数值，是单调栈处理此类问题的关键。
+
+2. **单调栈原理**：
+
+   * 栈内温度 **单调递减**，栈顶是最小的未解决温度。
+   * 新温度来时：
+
+     * 一次性弹出所有比它低的元素，更新它们的答案。
+     * 还剩下比它高的栈顶元素，等待未来更高温度。
+
+3. **错误与修正**：
+
+   * 初始错误：栈中存温度 → 无法计算索引差 → 结果错误。
+   * 修正方案：栈中存索引 → 可正确计算等待天数。
+
+4. **理解加深**：
+
+   * 每个元素只进栈一次，出栈一次 → 复杂度 O(n)。
+   * 弹栈更新答案时，不会漏掉更早入栈的元素，因为单调性保证了顺序正确。
+
+---
+
+```cpp
+
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        vector<int> answer;
+        int n = temperatures.size();
+        stack<int> wait(n, 0);
+
+        for (int i = 0; i < n; i++) {
+            int idx = wait.top();
+            while (!wait.empty() && temperatures[i] > temperatures[idx]) {
+                answer[idx] = i - idx;
+                stack.pop();
+            }
+            stack.push(i);
+        }
+        return answer;
+    }
+}
+
+```
+
+
+
+如果你愿意，我可以帮你画一张 **完整的单调栈可视化示意图**，直观展示每天温度的入栈、弹栈和答案更新过程，让整个流程一目了然。
+
+你希望我画吗？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 199. Binary Tree Right Side View
+
+好的 👍 我来帮你总结一下你这道 **199. Binary Tree Right Side View** 的解题思路和过程。
+
+---
+
+### 📌 题目简介
+
+这道题要求：给定一棵二叉树，从右侧看这棵树，返回从上到下看到的节点值。
+换句话说，每一层从右往左看，能看到的就是那一层的**最右边节点**。
+
+---
+
+### 💡 我的思考过程
+
+1. **具象化思考**
+
+   * 从右侧看树 → 等价于 “每一层的最后一个节点”。
+   * 因此需要按层遍历树，并在每层记录最后一个节点的值。
+
+2. **选择 BFS（层序遍历）**
+
+   * 层序遍历正好可以一层一层处理节点。
+   * 用 **队列 (queue)** 来实现 BFS：先进先出，保证逐层遍历。
+
+3. **具体做法**
+
+   * 初始化队列，先把根节点 `root` 入队。
+   * 循环：
+
+     * 先取出当前层节点数 `n = q.size()`。
+     * 遍历这一层的所有节点（`for i in [0..n-1]`）：
+
+       * 弹出队首节点。
+       * 如果 `i == n-1`，说明这是本层最后一个节点（最右边）→ 加入结果。
+       * 把该节点的左右孩子（如果存在）加入队列，等待下一层处理。
+   * 直到队列为空，遍历结束。
+
+---
+
+### ✅ 我的解答代码（DFS）
+
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        if (!root) return {};
+
+        vector<int> view;
+        dfs(node, 0, view);
+        return view;
+    }
+
+private:
+    void dfs(TreeNode* node, int depth, vector<int>& view) {
+        if (!node) return;
+        if (depth == view.size()) {
+            view.push_back(node->val);
+        }
+        if (node->right) dfs(node->right, depth + 1, view);
+        if (node->left) dfs(node->left, depth + 1, view);
+    }
+}
+
+```
+
+
+### ✅ 我的解答代码（BFS）
+
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        if (!root) return {};
+        queue<TreeNode*> q;
+        vector<int> view;
+
+        q.push(root);
+        while (!q.empty()) {
+            int n = q.size();
+
+            for (int i = 0; i < n; i++) {
+                TreeNode* node = q.front();            
+                q.pop();
+
+                if (i == n - 1) view.push_back(node->val);
+
+                if (node->left) q.push(node->left);                
+                if (node->right) q.push(node->right);
+            }
+        }
+        return view;
+    }
+};
+```
+
+---
+
+### 📊 复杂度分析
+
+* **时间复杂度**：O(n)，每个节点只会入队和出队一次。
+* **空间复杂度**：O(n)，队列最多存放一层的节点（最坏情况接近 n/2）。
+
+---
+
+### 🎯 总结
+
+我的解题过程是：
+
+1. 把题目转化为“每层取最右节点”。
+2. 联想到 BFS 层序遍历，队列保证逐层处理。
+3. 遍历每层时，只取最后一个节点作为右视图的结果。
+   最终写出了简洁高效的 BFS 解法。
+
+---
+
+要不要我帮你再写一版 **DFS 的递归解法总结**，放在一起对比，让你掌握 BFS 和 DFS 两种解法的思维差异？

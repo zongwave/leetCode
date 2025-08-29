@@ -50,6 +50,7 @@
   * [435. 不重叠区间](#435-non-overlapping-intervals)
   * [739. 每日温度](#739-daily-temperatures)
   * [199. 二叉树右侧节点](#199-binary-tree-right-side-view)
+  * [1161. 二叉树最大节点和层数](#1161-maximum-level-sum-of-a-binary-tree)
 
 ---
 
@@ -5396,6 +5397,10 @@ private:
 
 ```
 
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
 
 ### ✅ 我的解答代码（BFS）
 
@@ -5428,6 +5433,10 @@ public:
 
 ---
 
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
 ### 📊 复杂度分析
 
 * **时间复杂度**：O(n)，每个节点只会入队和出队一次。
@@ -5447,3 +5456,129 @@ public:
 ---
 
 要不要我帮你再写一版 **DFS 的递归解法总结**，放在一起对比，让你掌握 BFS 和 DFS 两种解法的思维差异？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+
+## 1161. Maximum Level Sum of a Binary Tree
+
+好的 👍 我来帮你整理一个完整的总结，包含题目简介、你在解题过程中的思考路径，以及我们讨论得到的核心要点。
+
+---
+
+### 题目简介
+
+**题目：Maximum Level Sum of a Binary Tree**
+给定一棵二叉树，要求返回节点值之和最大的那一层的层号（根节点为第 1 层）。
+
+---
+
+### 你的解题思路与过程
+
+1. **直觉分析**
+
+   * 题目要求分层统计 → 自然想到用 **层序遍历（BFS）**。
+   * BFS 每次处理一层节点，正好可以计算每层的节点和。
+
+2. **初始实现**
+
+   * 使用队列进行 BFS：`while (!q.empty())`。
+   * 在 `for` 循环里处理每层的节点，并累加求和。
+   * 用 `maxSum` 记录最大层和，用 `res` 记录对应层号。
+
+3. **发现问题**
+
+   * 一开始在 `for` 循环内部更新 `maxSum`，导致每层还没遍历完就提前比较，不够严谨。
+   * `level` 从 0 开始计数，不符合题目习惯（题目定义 root 为第 1 层）。
+
+4. **修正后实现**
+
+   * 把比较 `maxSum` 的逻辑移到 `for` 循环结束之后。
+   * 把 `level` 初始值设为 1。
+   * 最终代码实现了 **O(N) 时间 + O(W) 空间** 的最优解法。
+
+---
+
+```cpp
+class Solution {
+public:
+    int maxLevelSum(TreeNode* root) {
+        if (!root) return 0;
+
+        int level = 1;
+        int res = level;
+        int maxSum = INT_MIN;
+        queue<TreeNode*> q;
+        q.push(root);
+
+        while (!q.empty()) {
+            int n = q.size();
+            int sum = 0;
+            for (int i = 0; i < n; i++) {
+                TreeNode* node = q.front();
+                sum += node->val;
+                q.pop();
+
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            if (sum > maxSum) {
+                maxSum = sum;
+                res = level;
+            }
+            level ++;
+        }
+        return res;
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 核心要点总结
+
+1. **BFS 层序遍历的机制**
+
+   * 在进入 `while` 时，先固定当前队列大小 `n = q.size()`，这就是当前层的节点数。
+   * `for (i=0; i<n; i++)` 保证只处理当前层的节点，不会多处理。
+
+2. **层与层的衔接**
+
+   * 在 `for` 循环中处理当前层节点的同时，把它们的左右子节点 `push` 到队列。
+   * 这样保证了 **下一层的所有节点** 都会被完整加入队列，为下一轮 `while` 做好准备。
+
+3. **分层边界清晰**
+
+   * `for` 循环处理完 `n` 个节点后，当前层就完全结束。
+   * 下一轮 `while` 时，队列中正好是下一层的所有节点。
+   * 这种机制保证了层与层之间没有遗漏，也不会混淆。
+
+4. **复杂度**
+
+   * **时间复杂度 O(N)**：每个节点进队出队各一次。
+   * **空间复杂度 O(W)**：队列最大存储树的最大宽度。
+   * 已经是最优解。
+
+---
+
+✅ 总结一句：
+你通过 BFS 分层遍历解决了这道题，在过程中注意到了 **层的边界控制** 和 **子节点入队时机** 这两个 BFS 的核心点，并且通过修改代码把逻辑修正为最优解。
+
+---
+
+要不要我把最后的代码 + 一个完整的队列动态示意图（比如 \[1,7,0,7,-8] 那个例子）整理在一起，做成一份“题解讲义”风格的总结？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---

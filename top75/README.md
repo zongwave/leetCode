@@ -51,6 +51,7 @@
   * [739. 每日温度](#739-daily-temperatures)
   * [199. 二叉树右侧节点](#199-binary-tree-right-side-view)
   * [1161. 二叉树最大节点和层数](#1161-maximum-level-sum-of-a-binary-tree)
+  * [437. 二叉树路径数量](#437-path-sum-iii)
 
 ---
 
@@ -5576,6 +5577,195 @@ public:
 ---
 
 要不要我把最后的代码 + 一个完整的队列动态示意图（比如 \[1,7,0,7,-8] 那个例子）整理在一起，做成一份“题解讲义”风格的总结？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 437. Path Sum III
+
+好的，我帮你把整道题的思考、解题过程、关键点和容易遗忘的坑整理成一份完整复盘总结，便于复习。
+
+---
+
+### 📌 题目简介
+
+题目：**路径总和 III（Path Sum III）**
+
+* 给定一棵二叉树和一个整数 `targetSum`，统计从任意节点出发、向下的路径中，所有路径的和等于 `targetSum` 的数量。
+* 路径不要求从根节点开始，也不要求到叶节点结束，只要求 **沿着父子节点向下连续**。
+
+---
+
+### 📌 解题思路与过程
+
+### 1️⃣ 我的初始尝试（错误版）
+
+```cpp
+int pathSum(TreeNode* root, int targetSum) {
+    if (!root) return 0;
+    int sum = 0;
+    return dfs(root, 0, sum, targetSum);
+}
+```
+
+* 思路：尝试在一个递归函数里累加路径长度和路径值。
+* 错误点：
+
+  * 用一个 `sum` 引用在递归中累加，会破坏不同路径的独立性。
+  * 无法处理“路径不一定从根节点开始”的情况。
+* 结论：这种方法不行，需要 **双重递归**。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 2️⃣ 核心正确思路：双重递归
+
+* **外层递归**：遍历每个节点，把每个节点当作路径的起点。
+* **内层递归（dfs）**：从当前节点出发，沿下走，累加路径和，并统计路径数。
+
+伪代码：
+
+```cpp
+int pathSum(TreeNode* root, int targetSum) {
+    if (!root) return 0;
+    return dfs(root, targetSum)           // 内层统计以 root 为起点的路径
+         + pathSum(root->left, targetSum)  // 外层递归左子树
+         + pathSum(root->right, targetSum);// 外层递归右子树
+}
+
+int dfs(TreeNode* node, int targetSum) {
+    if (!node) return 0;
+    int res = 0;
+    if (node->val == targetSum) res++;       // 当前节点形成一条路径
+    res += dfs(node->left, targetSum - node->val);  // 继续往下
+    res += dfs(node->right, targetSum - node->val); // 继续往下
+    return res;
+}
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 3️⃣ 思路细节与关键理解
+
+1. **外层递归作用**：枚举每个节点作为路径起点，保证每条路径都被考虑。
+2. **内层递归作用**：从起点向下探索所有可能路径，统计路径数量。
+3. **为什么 `if` 和递归必须并行而不是 `else`**：
+
+   * 路径可以在当前节点凑齐 target，但还可能继续往下延伸形成新的合法路径。
+   * 如果用 `if...else`，会提前截断递归，漏掉像 `[1, -1, 0]`、`[-3,3,0]` 这样的路径。
+
+---
+
+### 4️⃣ 递归逻辑可视化（小例子）
+
+假设树：
+
+```
+1 → -1 → 0
+target = 0
+```
+
+* `[1, -1]` → 内层 `res++`
+* `[1, -1, 0]` → 内层递归继续探索 → `res++`
+* `[0]` → 外层递归从 0 节点重新作为起点 → `res++`
+
+✅ 标准写法能统计到 **3 条路径**。
+❌ 如果用 `if...else`，只会统计 `[1, -1]` → 漏掉 `[1, -1, 0]`。
+
+---
+
+### 5️⃣ 更一般的例子
+
+```
+1 → -1 → 0 → 0 → 0 → -2 → -3 → 5 → 0
+target = 0
+```
+
+* 从最前面的 `1` 出发，有多条合法路径（至少 6 条）：
+
+  * `[1, -1]`
+  * `[1, -1, 0]`
+  * `[1, -1, 0, 0]`
+  * `[1, -1, 0, 0, 0]`
+  * `[1, -1, 0, 0, 0, -2, -3, 5]`
+  * `[1, -1, 0, 0, 0, -2, -3, 5, 0]`
+* 用 `if...else` 会 **漏掉从前面节点延伸出的多条路径**。
+* 标准写法都能统计到。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+```cpp
+class Solution {
+public:
+    int pathSum(TreeNode* root, int targetSum) {
+        if (!root) return 0;
+
+        return dfs(root, targetSum) + pathSum(root->left, targetSum) + pathSum(root->right, targetsum);
+    }
+
+private:
+    int dfs(TreeNode* node, int targetSum) {
+        if (!node) return 0;
+
+        int res = 0;
+        if (targetSum == node->val) res ++;
+
+        res += dfs(node->left, targetSum - node->val);
+        res += dfs(node->right, targetSum - node->val);
+        return res;
+    }
+}
+
+
+```
+
+### 6️⃣ 核心总结
+
+1. **双重递归**：
+
+   * 外层：遍历每个节点作为起点
+   * 内层：从当前起点向下统计路径数量
+2. **内层递归必须并行执行** `res++` 和 `dfs`，不能用 `else`。
+3. **路径可以中途凑齐 targetSum，但仍需继续往下**，否则会漏统计。
+4. **容易遗忘点**：
+
+   * 为什么内层递归传 `targetSum - node->val` 而不是一直用原 targetSum
+   * 外层递归确保每个节点都被当作起点
+   * `if...else` 会提前截断，漏掉延伸路径
+
+---
+
+### 7️⃣ 复习建议
+
+1. **手写代码 + 口述**：每次写代码时大声说出逻辑
+2. **画递归树**：标出 `res++` 和递归的顺序
+3. **小例子演练**：比如 `[1 → -1 → 0]`、`[1 → -1 → 0 → 0]`
+4. **间隔复习**：当天、隔天、一周后重复练习
+
+---
+
+✅ **一句话总结**：
+这道题的核心是 **双重递归 + 内层递归并行处理当前节点和向下延伸**，千万不能把“当前节点命中 target”与“继续递归”搞成互斥，否则会漏掉很多路径。
+
+---
+
+如果你需要，我可以帮你画一个 **最终的递归调用树示意图**，标出每条路径是在哪一层统计到的，这样复盘一眼就记住整个逻辑。
+
+你希望我画吗？
 
 ---
 

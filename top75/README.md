@@ -51,7 +51,8 @@
   * [739. 每日温度](#739-daily-temperatures)
   * [199. 二叉树右侧节点](#199-binary-tree-right-side-view)
   * [1161. 二叉树最大节点和层数](#1161-maximum-level-sum-of-a-binary-tree)
-  * [437. 二叉树路径数量](#437-path-sum-iii)
+  * [437. 二叉树路径总和](#437-path-sum-iii)
+  * [215. 数组中第K大元素](#215-kth-largest-element-in-an-array)
 
 ---
 
@@ -5586,8 +5587,6 @@ public:
 
 ## 437. Path Sum III
 
-好的，我帮你把整道题的思考、解题过程、关键点和容易遗忘的坑整理成一份完整复盘总结，便于复习。
-
 ---
 
 ### 📌 题目简介
@@ -5772,3 +5771,122 @@ private:
 <a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
 
 ---
+
+## 215. Kth Largest Element in an Array
+
+好的 👍 我来帮你把 **215. Kth Largest Element in an Array** 的思考与解答过程完整总结一遍，方便你以后复习。
+
+---
+
+## 📌 题目简介
+
+**LeetCode 215. Kth Largest Element in an Array (中等难度)**
+给定一个数组 `nums` 和一个整数 `k`，返回数组中第 `k` 大的元素。注意这里的 `k` 大是指排序后第 `k` 大，不要求元素互不相同。
+
+题目要求思考：能否在 **不直接排序整个数组** 的情况下完成？
+
+这道题在 LeetCode 上标记为 **Medium** 的原因是：
+
+* 如果允许排序，直接 `sort` 一下很容易（O(n log n)）。
+* 但题目希望我们能用更高效的方法（比如 **最小堆** O(n log k)，或者 **快速选择 Quickselect** O(n)）。
+* 所以难度主要在于理解堆/分治思想，而不仅仅是暴力排序。
+
+---
+
+## 📌 你的解题思考过程
+
+1. **最直接的想法**
+
+   * 把数组排序 → 找第 `k` 大元素。
+   * 时间复杂度 O(n log n)。虽然能过，但不算最优。
+
+2. **更优的方法：堆**
+
+   * 用一个 **最小堆**（`priority_queue<int, vector<int>, greater<int>>`）。
+   * 维持堆大小为 k，保证堆里存放的是「目前遇到的最大的 k 个数」。
+   * 遍历数组：
+
+     * 如果堆没满，直接放进去；
+     * 如果堆满了，放新数进去，并弹出堆顶最小值。
+   * 遍历完毕后，堆顶就是第 k 大的数。
+   * 时间复杂度 O(n log k)，空间复杂度 O(k)。
+
+3. **代码优化的思考**
+
+   * 你最初写的版本是：
+
+     ```cpp
+     if (i < k) pq.push(nums[i]);
+     else { pq.pop(); pq.push(nums[i]); }
+     ```
+
+     这个逻辑有 bug，因为没有判断 `nums[i]` 是否比堆顶大，可能会错。
+   * 修正方法：
+
+     ```cpp
+     if (nums[i] > pq.top()) { pq.pop(); pq.push(nums[i]); }
+     ```
+   * 你后来想到一种更简洁的写法：
+
+     ```cpp
+     if (i < k) pq.push(nums[i]);
+     else { pq.push(nums[i]); pq.pop(); }
+     ```
+
+     ✅ 这是正确的！
+     因为这样保证了堆始终只保留 k 个元素，最终堆顶就是第 k 大。
+     缺点是比标准写法多了一点常数开销（因为可能 push+pop 一次无用数据）。
+
+---
+
+```cpp
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        priority_queue<int, vector<int>, greater<int>> pq;
+
+        for (int num : nums) {
+            pq.push(num);
+
+            if (pq.size() > k) pq.pop();
+        }
+        return pq.top();
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 📌 你的“管子装石子”类比
+
+你提出了一个非常形象的类比：
+
+* 想象有一个 **能装 k 个石子的管子**。
+* 管子有个魔法：
+
+  * 小石子会浮在上面，大石子沉在下面。
+  * 往里面放一个新石子，如果管子满了，最上面的小石子会被自动顶出去。
+* 遍历所有石子后，管子里就保留了 **最大的 k 个石子**，而管子顶部那个最小的石子就是 **第 k 大的石子**。
+
+⚠️ 小细节：
+
+* 管子里的石子并不是完全有序的，而是形成了一棵「堆」：只保证最小的在最上面。
+* 但我们只需要管子顶上的最小值，所以完全够用了。
+
+---
+
+## 📌 总结
+
+* 题目本质是 **选择问题 (selection problem)**。
+* 直接排序 → O(n log n)。
+* 用最小堆维护 k 个最大元素 → O(n log k)，更优。
+* 你的管子类比很好地解释了最小堆的工作方式：不断装入新元素，小的被挤出，最终留下最大的 k 个。
+
+---
+
+要不要我再帮你写一份 **对比堆解法 vs 快速选择 (Quickselect)** 的总结？这样你对为什么它是 `Medium` 难度会更清晰。

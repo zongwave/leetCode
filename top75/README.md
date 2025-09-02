@@ -54,6 +54,8 @@
   * [437. 二叉树路径总和](#437-path-sum-iii)
   * [215. 数组中第K大元素](#215-kth-largest-element-in-an-array)
   * [334. 递增三元子序列](#334-increasing-triplet-subsequence)
+  * [901. 在线股票涨势](#901-online-stock-span)
+  * [1372. 二叉树中最长zigzag路径](#1372-longest-zigzag-path-in-a-binary-tree)
 
 ---
 
@@ -6058,6 +6060,10 @@ $$
 
 ---
 
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
 ### 总结（你说的那句话非常精准）
 
 这道题“看懂答案觉得简单，真正理顺逻辑比较复杂”，就是因为：
@@ -6068,3 +6074,236 @@ $$
 ---
 
 要不要我帮你画一张「状态机图」，直观展示 **first/second 的变化轨迹** 和 **为什么 third > second 时一定成立**？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 901. Online Stock Span
+
+---
+
+### 题目简介
+
+股票跨度问题：
+给定每天的股票价格，返回当日的“跨度”，即连续几天的价格小于等于今天的价格。
+
+例如：
+输入 `[100, 80, 60, 70, 60, 75, 85]`
+输出 `[1, 1, 1, 2, 1, 4, 6]`
+
+---
+
+### 你的解答和思考历程
+
+### 1. **第一版解法**
+
+你一开始的思路是：
+
+* 用一个 `vector` 存储历史价格
+* 每次新来一个 `price`，就回头检查连续多少天的价格 ≤ 当前价格
+* 返回这个跨度
+
+**问题**：
+
+* 每次都要从后往前扫描，最坏情况 O(n)
+* n 次调用会变成 O(n²)，导致超时
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 2. **发现问题 → 想起单调栈**
+
+* 你意识到“逐个回头数”很低效
+* 想到应该用一个 **栈** 来存储历史信息，从而快速跳过冗余数据
+* 但一开始栈的用法没完全理清楚，还尝试过直接存 `price`，结果还是要一个个比
+
+---
+
+### 3. **突破点：信息压缩**
+
+在和我讨论的过程中，你总结出关键思想：
+
+* 栈里存的不只是价格，还要存“这个价格能向左延伸的跨度”
+* 这样当新价格 ≥ 栈顶价格时，可以一次性合并掉整段跨度，而不是逐个比
+* 实现了 **信息压缩**：
+
+  > 冗余的连续上涨部分，用 `(价格, 跨度)` 这个二元组来代表
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 4. **最终解法**
+
+你写出了正确解法：
+
+```cpp
+class StockSpanner {
+public:
+    StockSpanner() {}
+
+    int next(int price) {
+        int span = 1;
+        while (!_prices.empty() && price > _prices.top().first) {
+            span += _prices.top().second;
+            _prices.pop();
+        }
+        _prices.push(price, span);
+        return span;
+    }
+
+private:
+    stack<pair<int, int>> _prices;
+};
+```
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+* `_prices` 是单调递减栈
+* 每次新价格进来时，合并掉所有更小或相等的 `(price, span)`
+* 一次性得到最终跨度
+* 复杂度：O(1) 摊还时间 / O(n) 总复杂度
+
+---
+
+### 思考过程总结
+
+1. **最初思路**：暴力回头数，直观但低效
+2. **意识到问题**：发现时间复杂度太高，容易超时
+3. **尝试优化**：引入单调栈，但一开始只存 `price`，没有压缩信息
+4. **关键突破**：理解“冗余信息压缩”的本质，把连续的跨度打包进一个 pair
+5. **最终方案**：用单调递减栈，存 `(价格, 跨度)`，高效解决问题
+
+---
+
+### 你最大的收获
+
+* 单调栈的精髓不仅是“保持单调”，更是 **压缩冗余，保留关键拐点**
+* 这道题让你真正体会到：
+
+  > 有时候看似 O(n²) 的问题，只要把冗余数据“压缩”掉，就能变成 O(n)
+
+---
+
+要不要我再帮你做一个 **单调栈题型对照表**（这道题 vs 每日温度 vs 下一个更大元素 vs 接雨水），这样你能清晰看到不同题目中“压缩信息”的方式？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 1372. Longest ZigZag Path in a Binary Tree
+
+
+好的，我来帮你把这道 **Longest ZigZag Path in a Binary Tree（二叉树最长 ZigZag 路径）** 的解题过程和思路整理成一个总结。
+
+---
+
+### 题目简介
+
+给定一棵二叉树，定义 *ZigZag 路径*：从某个节点开始，先往左走，再往右走，再往左走……不断交替。要求返回树中最长 ZigZag 路径的长度。
+
+这是一道典型的 **二叉树 DFS + 状态传递** 的题，LeetCode 上难度为 Medium。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 我的解题过程与思路
+
+1. **初始尝试**
+
+   * 一开始写了一个递归函数 `dfs(node, fromLeft)`，打算通过方向参数来控制下一步走左还是走右。
+   * 但是逻辑不完整：没有正确传递当前路径长度，也没有全局记录最大值。导致结果不对。
+
+2. **意识到需要两个变量**
+
+   * `length`：当前递归链上的 ZigZag 路径长度。每次往相反方向延伸时 +1，若断开则重置为 1。
+   * `maxLen`：全局最长长度。需要在遍历过程中不断更新。
+   * 区分这两个变量是关键：
+
+     * `length` 是局部状态（沿着一条路径递归传下去即可）。
+     * `maxLen` 是全局状态（需要在所有路径里比较，不能仅靠返回值）。
+
+3. **关于参数传递的思考**
+
+   * `length` 可以直接作为参数传值传递，因为每个递归分支都独立维护自己的路径长度。
+   * `maxLen` 不能用值传递，否则子递归更新不会影响父递归 → 最终结果错误。
+   * 解决方法：
+
+     * 要么用引用参数 `int& maxLen`，
+     * 要么把 `maxLen` 作为类的成员变量。
+
+4. **最终结构**
+
+   * 主函数 `longestZigZag(TreeNode* root)` 保持题目接口不变。
+   * 辅助函数 `dfs(TreeNode* node, bool fromLeft, int length, int& maxLen)` 用来带状态递归：
+
+     * 每次更新 `maxLen = max(maxLen, length)`
+     * 然后递归到左子树和右子树，传递新的 `fromLeft` 和 `length`。
+   * 在主函数里调用 `dfs(root->left, true, 1, maxLen)` 和 `dfs(root->right, false, 1, maxLen)`，从根开始尝试两个方向。
+
+---
+
+```cpp
+class Solution {
+public:
+    int longestZigZag(TreeNode* root) {
+        if (!root) return 0;
+
+        int maxLen = 0;
+        dfs(root->left, true, 1, maxLen);
+        dfs(root->right, false, 1, maxLen);
+
+        return maxLen;
+    }
+
+private:
+    void dfs(TreeNode* node, bool fromLeft, int length, int& maxLen) {
+        if (!node) return;
+
+        maxLen = max(length, maxLen);
+        if (node->left) {
+            dfs(node->left, true, fromLeft ? 1 : lenght + 1, maxLen);
+        }
+        if (node->right) {
+            dfs(node->right, false, fromLeft ? length + 1 : 1, maxLen);
+        }
+        return;
+    }
+}
+
+```
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+### 我的收获
+
+* 这道题的核心其实就是 **二叉树 DFS 框架**，关键在于正确传递和区分两个变量：局部状态 `length` 和全局状态 `maxLen`。
+* 一开始我想把所有逻辑写进一个函数里，但题目接口固定，没法直接带上额外参数，所以最终采用了 **主函数 + 辅助函数** 的经典做法。
+* 更重要的体会是：在递归题中，**哪些参数是局部路径状态，哪些是需要全局维护的结果**，要在思考时分清楚，否则很容易写出逻辑混乱的代码。
+
+---
+
+要不要我帮你写一个 **简化版伪代码**（去掉 C++ 语法细节，只保留逻辑），让你的总结更直观、容易在复习时快速抓住思路？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---

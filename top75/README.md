@@ -56,6 +56,9 @@
   * [334. 递增三元子序列](#334-increasing-triplet-subsequence)
   * [901. 在线股票涨势](#901-online-stock-span)
   * [1372. 二叉树中最长zigzag路径](#1372-longest-zigzag-path-in-a-binary-tree)
+  * [151. 翻转字符串中的单词](#151-reverse-words-in-a-string)
+  * [216. 数字之和组合](#216-combination-sum-iii)
+  * [17. 电话号码的字母组合](#17-letter-combinations-of-a-phone-number)
 
 ---
 
@@ -6301,6 +6304,467 @@ private:
 ---
 
 要不要我帮你写一个 **简化版伪代码**（去掉 C++ 语法细节，只保留逻辑），让你的总结更直观、容易在复习时快速抓住思路？
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 151. Reverse Words in a String
+
+---
+
+### 题目简介
+
+这道题是经典的 **反转字符串中的单词顺序** 问题，要求将输入字符串中的单词顺序反转，同时去掉多余空格（首尾空格，以及单词间多余空格），并尽量使用原地操作优化空间复杂度。例如，输入 `"  the sky is blue  "`，输出应为 `"blue is sky the"`。
+
+---
+
+### 解题思路与过程总结
+
+1. **初始尝试**
+
+   * 最初采用的方法是 **遍历字符串收集单词到 `vector<string>`**，再倒序拼接成结果。
+   * 这种方法逻辑清晰，能处理连续空格和首尾空格，但存在两个问题：
+
+     * 需要额外的存储空间 $O(n)$
+     * 多次字符串拼接性能不够优
+
+2. **发现问题与改进方向**
+
+   * 目标是实现 **原地操作**，降低空间复杂度到 O(1)。
+   * 分析可得，原地方法核心是：
+
+     1. 处理空格，使字符串规范化（去掉首尾空格，中间多余空格压缩为单个空格）
+     2. 整体反转字符串
+     3. 逐个单词反转
+
+3. **关键经验与边界处理**
+
+   * 遍历字符串时需要注意 **循环边界**，保证最后一个单词的最后一个字符被处理到。
+   * 在第一次实现中，循环条件和尾索引计算存在小问题，导致最后一个单词漏掉。
+   * 通过修改循环条件和 `tail - 1` 的处理，使最后一个单词正确翻转。
+   * 空格压缩采用 **双指针覆盖写**：
+
+     * `fast` 指针扫描原字符串
+     * `slow` 指针记录有效字符写入位置
+     * 扫描结束后 `s.resize(slow)`，去掉尾部冗余字符
+
+4. **最终实现**
+
+   * **`removeSpace`**：原地压缩空格，保证单词间只有一个空格
+   * **整体翻转**：`reverseWord(s, 0, n - 1)`
+   * **逐个单词翻转**：使用 `head`、`tail` 双指针，逐个翻转单词
+   * 循环条件设置为 `tail < n`，保证所有单词都被处理
+   * 最终字符串即为按要求反转单词顺序的结果
+
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+        removeSpace(s);
+
+        int n = s.size();
+        reverseWord(s, 0, n - 1);
+
+        int tail = 0;
+        int head = tail;
+
+        while (tail < n) {
+            while (tail < n && s[tail] != ' ') {
+                tail ++;
+            }
+            reversWord(s, head, tail - 1);
+            tail += 1;
+            head = tail;
+        }
+        return s;
+    }
+}
+
+private:
+    void removeSpace(string& s) {
+        int read = 0;
+        int write = 0;
+        int n = s.size();
+
+        while (read < n && s[read] == ' ') {
+            read ++;
+        }
+            
+        while (read < n) {
+            if (s[read] != ' ') {
+                s[write ++] = s[read ++];
+            } else {
+                while (read < n && s[read] == ' ') {
+                    read ++;
+                }
+                if (read < n) s[write ++] = ' ';
+            }
+        }
+        s.resize(write);
+    }
+
+    void reverseWord(string& s, int head, int tail) {
+        while (head < tail) {
+            char c = s[head];
+            s[head] = s[tail];
+            s[tail] = c;
+            head ++;
+            tail --;
+        }
+    }
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+5. **总结与优化点**
+
+   * 通过原地反转法实现空间复杂度 O(1)，时间复杂度 O(n)
+   * 循环边界处理和尾部单词处理是关键经验
+   * 双指针方法可同时完成空格压缩和单词翻转，逻辑清晰且性能优良
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+整体来看，你的解题过程体现了 **从直观、可行解法 → 优化空间与性能 → 注意边界问题 → 最终原地高效实现** 的完整思路，思路清晰，经验点明确。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+
+## 216. Combination Sum III
+
+好的👌 我来帮你整理一下 **Combination Sum III** 这道题的思考和解答过程。
+
+---
+
+### 题目简述
+
+**Combination Sum III**
+
+* 给定两个整数 `k` 和 `n`，要求在数字 `1-9` 中找出所有可能的组合，
+* 使得每个组合中恰好有 `k` 个数，并且这些数的和为 `n`。
+* 每个数字只能用一次。
+
+例如：
+
+* 输入 `k=3, n=7`，输出 `[[1,2,4]]`。
+* 输入 `k=3, n=9`，输出 `[[1,2,6],[1,3,5],[2,3,4]]`。
+
+---
+
+### 你的思考与解答过程
+
+1. **题目理解阶段**
+
+   * 你先分析了限制条件：
+
+     * 数字只能取 `1-9`；
+     * 组合的长度固定为 `k`；
+     * 组合的数字和固定为 `n`。
+   * 你意识到这并不是简单的穷举，需要在搜索过程中剪枝，避免无效路径。
+
+2. **确定解题思路**
+
+   * 你想到用 **回溯算法**（backtracking）：
+
+     * 逐个从 `1-9` 中选择数字，加入到当前组合（`path`）；
+     * 每次选择后更新“还需要多少个数”（`k` 的剩余）和“还需要多少和”（`n` 的剩余）；
+     * 当组合长度达到 `k` 且和为 `n` 时，得到一个合法解。
+
+3. **函数与数据结构设计**
+
+   * 你设计了一个 **递归函数 dfs(start, path, sum)**：
+
+     * `start`：控制从哪个数字开始选择，避免重复（保证组合不含相同元素，且按升序）。
+     * `path`：当前组合。
+     * `sum`：当前组合的数字和。
+   * 终止条件：
+
+     * 如果 `path.size() == k` 且 `sum == n` → 收集结果。
+     * 如果 `sum > n` 或 `path.size() > k` → 剪枝返回。
+
+4. **编码与调试阶段**
+
+   * 你实现了基本的回溯框架：
+
+     * for 循环枚举下一个数；
+     * 加入 `path`；
+     * 递归下一层；
+     * 回溯时弹出该数。
+   * 在调试过程中，你思考了几个细节：
+
+     * **res 的定义位置**（放在外层还是递归参数中传引用）；
+     * **path 的维护**（push\_back / pop\_back 保持一致）；
+     * **剪枝条件**（当 sum 超过 n 时立即返回，减少无效搜索）。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+```cpp
+
+class Solution {
+public:
+    vector<vector<int>> combinationSum3(int k, int n) {
+        vector<vector<int>> res;
+        vector<int> path;
+        int sum = 0;
+
+        backTracking(1, res, path, sum, k, n);
+
+        return res;
+    }
+
+private:
+    void backTracking(int start, vector<vector<int>>& res, vector<int>& path, int sum, int k, int n) {
+        if (sum > n || path.size() > k) {
+            return;
+        }
+        if (sum == n && path.size() == k) {
+            res.push_back(path);
+            return;
+        }
+
+        for (int i = start; i < 9; i++) {
+            path.push_back(i);
+            backTracking(i + 1; res, path, sum + i, k, n);
+            path.pop_back();
+        }
+    }
+}
+
+```
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+5. **反思与总结**
+
+   * 你意识到这道题和其他回溯题的共性：
+
+     * 都需要 `path` 来保存组合；
+     * 都需要一个“起点 index”控制递归，避免重复选择；
+     * 都需要终止条件 + 剪枝来提高效率。
+   * 和 **电话号码的字母组合** 相比：
+
+     * 电话号码题的选择空间是“每个数字对应的字母表”；
+     * Combination Sum III 的选择空间是“剩余的数字 1-9”。
+     * 但两者的 **递归函数设计框架** 非常相似。
+
+---
+
+### 总结
+
+你的解题过程体现了对 **回溯算法的掌握和迁移**：
+
+1. 把问题抽象为“路径搜索”问题；
+2. 明确递归参数（start、path、sum）；
+3. 在递归函数中写清楚选择、递归、撤销选择；
+4. 通过剪枝优化搜索效率。
+
+可以看出，你已经逐步掌握了回溯算法的套路，并能在不同题型中迁移使用。
+
+
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+---
+
+## 17. Letter Combinations of a Phone Number
+
+---
+
+### 题目简述
+
+**电话号码的字母组合**
+
+* 给定一个仅包含数字 `2-9` 的字符串，每个数字对应手机键盘上的一组字母。
+* 要求返回所有可能的字母组合。
+* 例如输入 `"23"`，输出 `["ad","ae","af","bd","be","bf","cd","ce","cf"]`。
+
+---
+
+### 你的思考与解答过程
+
+1. **题目理解阶段**
+
+   * 一开始你先分析了问题的本质：
+     这是一个“从每个按键的候选字母里各选一个，组合成字符串”的问题。
+   * 你很快意识到：这并不是简单的循环枚举，因为按键个数可能不固定，需要一种能自然处理“所有可能路径”的方法。
+
+2. **确定解题思路**
+
+   * 你想到用 **回溯算法**（backtracking）：
+
+     * 每个数字对应一个字母集合；
+     * 在递归过程中，每层从当前数字的字母集合中选择一个加入路径；
+     * 当路径长度等于输入数字串长度时，得到一个完整解。
+   * 这一点和你之前做的回溯题（比如组合/子集问题）很类似，只不过这道题的“选择集”是 **字母表** 而不是“取/不取”。
+
+3. **函数与数据结构设计**
+
+   * 你定义了一个 **字符映射表**（digit → letters）。
+   * 设计了一个 **递归函数 dfs(index, path)**：
+
+     * `index` 表示当前处理到输入字符串的第几位数字；
+     * `path` 用于收集当前构造中的字母组合；
+     * 当 `index == digits.length` 时，说明形成了完整的组合，把 `path` 加入结果。
+
+4. **编码与调试阶段**
+
+   * 你的第一版代码结构已经有了：
+
+     * 搭建了映射表；
+     * 写了递归框架；
+     * 定义了结果集。
+   * 不过在最初实现时，回溯的细节（比如递归结束条件、如何收集结果、是否需要回溯操作）一开始没完全想清楚。
+   * 但大的方向是对的：用递归去遍历所有可能路径。
+
+---
+
+<a href="#题目" style="font-size: 16px; color: #666;">▲ 返回题目</a>
+
+
+```cpp
+class Solution {
+public:
+    vector<string> letterCombinations(string digits) {
+        if (digits.empty()) return {};
+
+        vector<string> res;
+        string path;
+
+        vector<string> keys = convertKeys(digits);
+
+        backTracking(res, keys, 0, path);
+        return res;
+    }
+
+private:
+    vector<string> keypad = { "abc", "def", "ghi", "jkl",
+                              "mno", "pqrs", "tuv", "wxyz"};
+    
+    void backTracking(vector<string>& res, vector<string>& keys, int idx, string& path) {
+        if (idx == keys.size()) {
+            res.push_back(path);
+            return;
+        }
+
+        for (char c : keys[idx]) {
+            path.push_back(c);
+            backTracking(res, keys, idx + 1, path);
+            path.pop_back();
+        }
+    }
+
+    vector<string> convertKeys(string digits) {
+        vector<string> keys;
+
+        for (char c : digits) {
+            int digit = c - '2';
+            if (digit >= 0 && digit < keypad.size()) {
+                keys.push_back(keypad[digit]);
+            }
+        }
+        return keys;
+    }
+}
+
+```
+
+---
+
+5. **反思与总结**
+
+   * 你逐渐意识到：
+
+     * 回溯算法的关键是 **路径 `path` 的维护**；
+     * 每一层都要做“选择 → 递归 → 撤销选择”。
+   * 对比上一道回溯题，你发现它们在函数设计上是类似的：
+
+     * 都需要 `path` 来保存当前解；
+     * 都需要 `index` 控制递归深度；
+     * 区别只在于“每一步的选择空间不同”。
+
+---
+
+### 总结
+
+你的解题过程展现了很清晰的“回溯思维框架”：
+
+1. 抽象问题为“路径构造” → 每个按键选一个字母；
+2. 设计映射表 + 递归函数；
+3. 用 `path` 收集路径；
+4. 完整解法通过递归遍历得到所有结果。
+
+整体方向正确，第一版实现只是细节没处理完全，但你已经成功抓住了 **回溯法的核心模式**。
+
+---
+你总结得很准确 ✅。这段代码正好体现了回溯的核心思想：
+
+1. **递归出口（终止条件）**
+
+   ```cpp
+   if (idx == keys.size()) {
+       res.push_back(path);
+       return;
+   }
+   ```
+
+   👉 当递归走到最后一个数字（`idx == keys.size()`）时，说明 `path` 已经收集好了一个完整的组合，就加入结果集。
+
+2. **递归过程（for 循环）**
+
+   ```cpp
+   for (char c : keys[idx]) {
+       path.push_back(c);
+       backTracking(res, keys, idx + 1, path);
+       path.pop_back();
+   }
+   ```
+
+   👉 遍历当前数字对应的所有字母，逐个尝试：
+
+   * 选择 `c` → 加入 `path`
+   * 进入下一层递归 `idx + 1`
+   * 回溯（撤销选择）`path.pop_back()`
+
+3. **for 循环 + 递归 = 遍历所有可能组合**
+
+   * 每层递归对应一个数字（按键）。
+   * 每层循环遍历该数字能映射的所有字母。
+   * 最终就把所有路径（组合）枚举出来。
+
+📌 总结：
+你已经掌握了回溯模板的关键逻辑：
+
+* **路径收集**：用 `path` 记录当前选择。
+* **终止条件**：路径达到目标时加入结果。
+* **递归 + 回溯**：for 循环中递归，退出后撤销选择。
+
+这也是「组合/排列/子集/电话号码字母组合」等题的共通思路。
+
+要不要我帮你整理一个 **通用回溯算法模板**，并对比这道题和 *Combination Sum III* 的差异点？
 
 ---
 

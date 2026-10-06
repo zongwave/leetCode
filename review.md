@@ -1,3 +1,20 @@
+# LeetCode 刷题复习笔记
+
+## 目录
+1. [Two Sum](#two-sum)
+2. [Valid Anagram](#valid-anagram)
+3. [26. Remove Duplicates from Sorted Array](#26-remove-duplicates-from-sorted-array)
+4. [Valid Palindrome](#valid-palindrome)
+5. [Move Zeroes](#move-zeroes)
+6. [Container with Most Water](#container-with-most-water)
+7. [Longest Substring Without Repeating Characters](#longest-substring)
+8. [Merge Intervals](#merge-intervals)
+9. [Maximum Depth of Binary Tree](#maximum-depth-of-binary-tree)
+10. [Invert Binary Tree](#invert-binary-tree)
+11. [Binary Tree Right Side View](#binary-tree-right-side-view)
+12. [Path Sum](#path-sum)
+
+---
 
 # Two Sum
 
@@ -442,3 +459,77 @@ void invertBinaryTree(TreeNode* tree) {
 }
 
 ```
+
+# Binary Tree Right Side View
+
+## 思路
+ - 按照提示，用层序遍历 (BFS) 右边节点是本层最右边的节点，但是如何找出同一层最右节点？用一个层号？
+ - 按照提示把同一层的所有节点按序入队列
+ - 层遍历不知怎么写。这道题直觉是先查找右侧叶子，如果右侧叶子不存在，左侧叶子也能从右边观察到，所以也必须从右往左检查。必须要用队列吗？
+ - 层序遍历 (BFS) 两层循环，外层检查队列中是否还有节点，内层遍历当前层全部的节点。第一层 root 在 while 循环外加入队列。之后在 for 循环中处理当前层时可以把下一层的节点加入队列 push。因为 for 循环遍历的节点个数 n 是在进入循环之前通过检查队列大小得到的，因此可以保证每个 for 循环只遍历一层中的节点数。注意在每个 for 循环中，处理完的节点 front 应当及时 pop 从队列中清除。只有这样才能保证下一个 for 循环能够正确处理一整层的节点。
+
+## 复杂度
+ - 时间：按层遍历，n 层，O(n)
+ - 空间：队列里加入节点
+
+```cpp
+
+std::vector<int> rightSideView(TreeNode* root) {
+    std::vector<int> res;
+    if (root == nullptr) return res;
+
+    std::queue<TreeNode*> q;
+    q.push(root);
+
+    while (!q.empty()) {
+        int n = static_cast<int>(q.size());
+        int rightMost = 0;
+        
+        for (int i = 0; i < n; i++) {
+            TreeNode* node = q.front();
+            q.pop();
+            rightMost = node->val;
+
+           if (node->left) q.push(node->left);
+           if (node->right) q.push(node->right);
+        }
+        res.push_back(rightMost);
+    }
+    return res;
+}
+
+```
+
+# Path Sum
+
+# 思路
+ - 采用二叉树的 DFS （深度遍历）
+ - 遍历过程中累加数值，检查是否最终累加到尾部的和是否等于 target
+ - 遍历过程用 target 减去当前值的方式更加简洁。
+ - 主函数检查 root nullptr 还不够，需要在 dfs 递归函数中每次调用都检查。因为在 dfs 中只是对 left && right 同时为 nullptr 进行了处理，只有一方为 nullptr 的情况并没有处理。
+ - 递归函数调用栈会对传入的参数在各自的调用栈独立处理，不会被混淆。因此值传递是安全的。如果传递引用，逻辑会变复杂，需要在每个调用栈分岔处对数值变量进行分身处理。
+
+# 复杂度
+ - 空间，如果用递归，那么最坏情况需要 n 层调用栈 O(n)
+ - 时间，n 层递归 O(n)
+
+ ```cpp
+
+bool dfs(TreeNode* node, int target_val) {
+    if (node == nullptr) return false;
+    target_val -= node->val;
+
+    if (node->left == nullptr && node->right == nullptr) {
+        return target_val == 0;
+    }
+    return dfs(node->left, target_val) || dfs(node->right, target_val);
+}
+
+bool pathSum(TreeNode* root, int target_val) {
+    if (root == nullptr) {
+        return false;
+    }
+    return dfs(root, target_val);
+}
+
+ ```

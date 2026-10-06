@@ -9,10 +9,11 @@
 6. [Container with Most Water](#container-with-most-water)
 7. [Longest Substring Without Repeating Characters](#longest-substring)
 8. [Merge Intervals](#merge-intervals)
-9. [Maximum Depth of Binary Tree](#maximum-depth-of-binary-tree)
-10. [Invert Binary Tree](#invert-binary-tree)
-11. [Binary Tree Right Side View](#binary-tree-right-side-view)
-12. [Path Sum](#path-sum)
+9. [Reverse Linked List](#reverse-linked-list)
+10. [Maximum Depth of Binary Tree](#maximum-depth-of-binary-tree)
+11. [Invert Binary Tree](#invert-binary-tree)
+12. [Binary Tree Right Side View](#binary-tree-right-side-view)
+13. [Path Sum](#path-sum)
 
 ---
 
@@ -370,7 +371,7 @@ std::pair<int, int> mergeIntervals(std::vector<std::pair<int, int>>& intervals) 
 
  ```
 
- # Reverse Linked List
+# Reverse Linked List
 
  ## 思路
   - 整个反转操作在原链表上进行。

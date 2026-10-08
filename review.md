@@ -18,6 +18,7 @@
 | 199 | [Binary Tree Right Side View](#binary-tree-right-side-view) | 二叉树的右视图 | 二叉树层序 BFS | 中等 |
 | 112 | [Path Sum](#path-sum) | 路径总和 | 二叉树 DFS | 简单 |
 | 739 | [Daily Temperatures](#daily-temperatures) | 每日温度 | 单调栈 | 中等 |
+| 503 | [Next Greater Element II](#next-greater-element-ii) | 下一个更大元素 II | 单调栈（环形） | 中等 |
 
 ---
 
@@ -1176,12 +1177,148 @@ stack:  保存还没有找到「右边更大温度」的下标
  - 一个下标只会进栈、出栈各一次，所以整体是 `O(n)`，比暴力 `O(n^2)` 好。
  - 记忆点：**从左往右时，栈里留的是"还没等到升温的下标"，一旦出现更高的，就结算一批。**
 
+## 解题心得
+ - std::vector 当作栈来使用，即后进先出，只从队尾操作，先 push_back 的排在队伍最前面，用 front 查看。后 push_back 的排在队伍最后面，用 back 查看。
+ - 采用 while 循环从 vector 栈的最后排查看 back，如果队伍最后的气温比当前气温低，就用 pop_back 弹出，直到队伍最后一个气温不满足要求，即队伍最后的气温不低于当前比较值，就可以安全的跳出 while 循环比较，因为队伍前面的气温必然也不低于当前比较值。经过以上的操作， vector 栈内能够留下的气温记录必然是后面的比前面的气温低，这也是`单调栈`这个名称的由来。
+ - answer / 记录比较索引 保存的是日期索引，返回值记录的是日期的差值，不能和输入气温数组混淆。
+
 ## 复杂度
  - 时间：每个下标最多进栈一次、出栈一次，总体 `O(n)`
  - 空间：最坏情况（温度一路递减）栈里存下全部下标，`O(n)`
 
- ```cpp
+```cpp
  
+std::vector<int> dailyTemperatures(const std::vector<int>& temp) {
+    int count = static_cast<int>(temp.size());
 
- 
- ```
+    std::vector<int> answer(count, 0);
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (temp[j] > temp[i]) {
+                answer[i] = j - i;
+                break;
+            }
+        }
+    }
+    return answer;
+}
+
+
+std::vector<int> dailyTemperatures_opt(const std::vector<int>& temp) {
+    int count = static_cast<int>(temp.size());
+
+    std::vector<int> answer(count, 0);
+    std::vector<int> stack;
+    for (int i = 0; i < count; i++) {
+        while (!stack.empty() && temp[stack.back()] < temp[i]) {
+            int day = stack.back();
+            answer[day] = i - day;
+            stack.pop_back();
+        }
+        stack.push_back(i);
+    }
+    return answer;
+}
+
+```
+
+---
+
+# Next Greater Element II
+
+## 题目
+
+**LeetCode 503 · 下一个更大元素 II（Next Greater Element II）· 中等**
+
+给定一个 **循环数组** `nums`（`nums[n - 1]` 的下一个元素是 `nums[0]`），对每个元素，找出它的 **下一个更大元素**：
+
+- 「下一个更大元素」指从该位置出发**沿数组方向向后走**（可以绕回开头继续找），遇到的**第一个严格更大**的值；
+- 找一圈都没有更大的，对应位置填 `-1`。
+
+```text
+nums  = [1, 2, 1]
+answer = [2, -1, 2]
+
+第 0 个 1 -> 右边第一个更大的是 2
+第 1 个 2 -> 绕一圈回来也没有比 2 更大的，填 -1
+第 2 个 1 -> 向右到头没有，绕回开头，第一个是 1（相等不算大），第二个 2 才是 -> 填 2
+```
+
+**数据范围**：`1 <= nums.length <= 10^4`，`-10^9 <= nums[i] <= 10^9`。
+
+和 739 的两处不同，先看清再动手：
+
+| | 739 每日温度 | 503 本题 |
+| --- | --- | --- |
+| 答案记录 | 等待的**天数**（下标差） | 更大的**值**本身 |
+| 数组形状 | 直线，走到头为止 | **环形**，可以绕回开头接着找 |
+| 找不到时 | 填 `0` | 填 `-1` |
+
+## 图示
+
+```text
+        +---+---+---+
+nums =  | 1 | 2 | 1 |        环形：下标 2 的下一个是下标 0
+        +---+---+---+
+          0   1   2
+              ^   |
+              |   v
+              +---+   （尾部绕回头部）
+
+下标 2 的 1 寻找更大元素的路径：
+    下标 2 -> 下标 0（值 1，相等不算）-> 下标 1（值 2，更大！）-> answer[2] = 2
+```
+
+## 思路
+ - 采用单调栈，同样用数组尾部操作模拟。
+ - 因为是环形检查，绕一圈追到后面，循环次数必须是 2*n-1
+ - 但是加入单调栈的数字不能重复，只能是 0~n-1，因此很自然，需要判定 for 循环索引小于 count 才加入栈。
+ - 用单调栈数值从输入数组索引数值，也必须对 for 循环索引做 count 取余操作。
+
+## 解题心得
+ - 暴力法从输入数值索引数值时忘记对 j 下标做取余操作。
+ - 解题用到两个 “轴” 索引，一个是扫描轴 i: 0 ~ 2n-2，另一个是数组索引 0 ~ n-1
+ - 索引数组必须取余，栈内的索引已被限位到 0 ~ n-1
+
+## 复杂度
+ - 暴力法
+   空间：使用了一个长度为 n 的数值，O(n)
+   时间：双侧循环 O(n^2)
+ - 单调栈
+   空间：O(n)
+   时间：需要查询 2*n-1 O(n)
+
+```cpp
+std::vector<int> nextGreaterElement(const std::vector<int>& nums) {
+    int count = static_cast<int>(nums.size());
+    std::vector<int> answer(count, -1);
+
+    for (int i = 0; i < count; i++) {
+        for (int j = i + 1; (j % count) != i; j++) {
+            if (nums[j % count] > nums[i]) {
+                answer[i] = nums[j % count];
+                break;
+            }
+        }
+    }
+    return answer;
+}
+
+
+std::vector<int> nextGreaterElement_opt(const std::vector<int>& nums) {
+    int count = static_cast<int>(nums.size());
+    std::vector<int> answer(count, -1);
+    std::vector<int> stack;
+
+    for (int i = 0; i < 2 * count - 1; i++) {
+        while (!stack.empty() && nums[stack.back()] < nums[i % count]) {
+            answer[stack.back()] = nums[i % count];
+            stack.pop_back();
+        }
+        if (i < count) stack.push_back(i);
+    }
+    return answer;
+}
+
+```

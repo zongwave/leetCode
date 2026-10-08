@@ -1,0 +1,5 @@
+# MSVC 编译产物
+*.obj
+*.exe
+*.pdb
+*.ilk

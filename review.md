@@ -20,6 +20,9 @@
 | 739 | [Daily Temperatures](#daily-temperatures) | 每日温度 | 单调栈 | 中等 |
 | 503 | [Next Greater Element II](#next-greater-element-ii) | 下一个更大元素 II | 单调栈（环形） | 中等 |
 | 84 | [Largest Rectangle in Histogram](#largest-rectangle-in-histogram) | 柱状图中最大的矩形 | 单调栈 | 困难 |
+| 42 | [Trapping Rain Water](#trapping-rain-water) | 接雨水 | 双指针（双向灌水） | 困难 |
+| 704 | [Binary Search](#binary-search) | 二分查找 | 二分（审讯模型：闭区间 + <= + ±1） | 简单 |
+| 35 | [Search Insert Position](#search-insert-position) | 搜索插入位置 | 二分（同 704 三件套，只动 return） | 简单 |
 
 ---
 
@@ -1475,5 +1478,341 @@ int largestRectHist_opt(const std::vector<int>& hist) {
         if (base < count) stack.push_back(base);
     }
     return maxRect;
+}
+```
+
+---
+
+# Trapping Rain Water
+
+## 题目
+
+**LeetCode 42 · 接雨水（Trapping Rain Water）· 困难**
+
+给定 `n` 个非负整数 `height`，依次表示每根宽度为 1 的柱子的高度。求下雨之后，这幅柱状图能**接住多少单位体积的雨水**。
+
+```text
+示例：height = [0,1,0,2,1,0,1,3,2,1,2,1]   输出 6
+```
+
+**数据范围**：`1 <= height.length <= 2 * 10^4`，`0 <= height[i] <= 10^5`。
+
+## 图示
+
+```text
+height = [0,1,0,2,1,0,1,3,2,1,2,1]         ≈ 代表水，答案 6
+
+  3 |                             ██
+  2 |             ██  ≈≈  ≈≈  ≈≈  ██ ██  ≈≈  ██
+  1 |     ██  ≈≈  ██  ██  ≈≈  ██  ██ ██  ██  ██  ██
+      +---+---+---+---+---+---+---+---+---+---+---+---+
+        0  1  2   3   4   5    6  7   8   9  10  11
+
+逐列验算（水深 = min(左max,右max) − h）：
+下标 2:1  4:1  5:2  6:1  9:1，合计 6 ✓（其余列水深 0）
+```
+
+关键视角：不去想「整个水槽多大」，而是问「第 i 根柱子头顶积了多深的水」，逐列累加。
+
+左右楼梯（双指针的几何图像，配合下方「双指针」一节看）：
+
+```text
+左楼梯 = 前缀max（从左往右走，只升不降）
+  3 |                      ██ ██ ██ ██ ██
+  2 |          ██ ██ ██ ██ ██ ██ ██ ██ ██
+  1 |    ██ ██ ██ ██ ██ ██ ██ ██ ██ ██ ██
+    +---+---+---+---+---+---+---+---+---+---+---+---+
+     0  1  2  3  4  5  6  7  8  9  10 11
+
+右楼梯 = 后缀max（从右往左走，只升不降）
+  3 | ██ ██ ██ ██ ██ ██ ██ ██
+  2 | ██ ██ ██ ██ ██ ██ ██ ██ ██ ██ ██
+  1 | ██ ██ ██ ██ ██ ██ ██ ██ ██ ██ ██ ██
+    +---+---+---+---+---+---+---+---+---+---+---+---+
+     0  1  2  3  4  5  6  7  8  9  10 11
+
+水面线 = 逐列 min(左楼梯, 右楼梯)，即两条楼梯的下轮廓
+  3 |                      ██
+  2 |          ██ ██ ██ ██ ██ ██ ██ ██
+  1 |    ██ ██ ██ ██ ██ ██ ██ ██ ██ ██ ██
+    +---+---+---+---+---+---+---+---+---+---+---+---+
+     0  1  2  3  4  5  6  7  8  9  10 11
+
+左楼梯只升、右楼梯只降 ⇒ 两楼梯恰好相交一次，交点在全局最高柱 idx7。
+水面线在交点左边贴左楼梯、右边贴右楼梯；交点处柱高=水面，该列水深 0。
+水深 = 水面线 − 柱高：1+1+2+1+1 = 6 ✓（与上面逐列验算一致）
+```
+
+## 主解法：逐列定高（推荐，热身首选）
+
+盯着一根柱子 `i`，它头顶的水位由谁说了算？三个事实：
+
+1. 水不会漫过它**左边最高**的柱，也不会漫过**右边最高**的柱——水位 = `min(左边最高, 右边最高)`；
+2. 水深 = `水位 - 自己高`，若为负就是 0（柱子本身露在水面外）；
+3. 每列水深加起来就是答案。
+
+$$水_i = \min(\text{leftMax}_i,\ \text{rightMax}_i) - height_i$$
+
+**难点只剩一个**：`leftMax_i`（i 及其左边的最高柱）和 `rightMax_i` 怎么**不重复劳动**地拿到。这正好是你在暴力法里练过的「每次从头扫一遍」→ 想想能不能**一边扫一边顺手记一个滚动最大值**，把 O(n²) 降到 O(n)。
+
+先写最朴素的：每列各扫左右求两个 max（O(n²)，一定对，先拿分）。再想怎么预存成数组、一趟搞定。
+
+## 与 84 的分野
+
+| | 84 最大矩形 | 42 接雨水 |
+| --- | --- | --- |
+| 枚举对象 | 每根柱子当**矩形高** | 每根柱子头顶的**水深** |
+| 关心的邻居 | 左右第一个**更矮**（边界） | 左右**最高**（水位上限） |
+| 累加量 | 面积取 **max** | 水量取 **sum** |
+| 单调栈 | 核心解法 | 评估后**不采用**，双指针更直白 |
+
+一句话：84 在比大小，42 在做加法；方向也从「找更矮的」变成「找最高的」，别把肌肉记忆用反。
+
+## 思路
+ - 暴力法
+  * 左右端点的柱子存不住水，用 for 循环遍历从 1~n-2 即可
+  * 每次只考虑当前柱子顶上能存多少水，也即是它的左右是否有能拦得住水的高柱子
+  * 最终水位由左右两边矮的柱子决定
+  * 从当前柱子 cur 向左 left 和 向右 right 分别查找最高位
+  * 当前柱子 cur 高于 左和右，则水位为 0
+
+
+## 解题心得
+ - 不是找当前柱子左边和右边的相邻的第一根更高的柱子
+ - 找到左右两侧最高的柱子的矮的那个高度
+ - 用找到的高度与当前高度对比，高出来的高度是存的水
+
+
+## 复杂度
+ - 暴力法
+  * 空间 无需额外分配内存， O(1)
+  * 时间 外层遍历 n-2 内层两次最大 n-3 遍历， O(n^2)
+ - 双指针
+  * 空间 只有左右指针和两个滚动 max， O(1)
+  * 时间 两指针合计最多走 n-1 步，每步 O(1)， O(n)
+
+
+```cpp
+int trappingWater(const std::vector<int>& bins) {
+    int count = static_cast<int>(bins.size());
+    int water = 0;
+
+    for (int cur = 1; cur < count - 1; cur++) {
+        int leftMax = 0;
+        int rightMax = 0;
+        for (int left = cur - 1; left >= 0; left--) {
+            leftMax = std::max(leftMax, bins[left]);
+        }
+        for (int right = cur + 1; right < count; right++) {
+            rightMax = std::max(rightMax, bins[right]);
+        }
+        int w = std::min(leftMax, rightMax)- bins[cur];
+        water += (w > 0) ? w : 0;
+    }
+    return water;
+}
+```
+
+## 双指针
+
+起点还是逐列定高，但注意 **min 只关心矮的那一边**——高的一边具体多高不重要，只要确认它不矮于另一边。于是问题从「每列求两个 max」降级为「每列什么时候能确认瓶颈是哪边」。
+
+`left`、`right` 从两端向中间走，各带一个滚动 max。每轮比较两个指针脚下的柱子：
+
+ - `bins[left] < bins[right]` ⇒ 右边已有一根严格高于左柱的墙托底，left 列水位由 leftMax 封顶 ⇒ 结算 left 列，`left++`；对称地结算 right 列
+ - 不变式：leftMax 里滚进来的柱子都是当年在左支「输给过右边某根墙」的，那根墙至今仍站在 left 右边 ⇒ tracked leftMax 永不虚高过真正的右 max，min 取左max 的前提永远成立
+ - 一轮循环 = 结算一列 = 某根指针走一步，共 n-1 步，单层 while 无嵌套；相遇列是边界、水深必为 0，不结算也安全
+ - 先 `leftMax = max(...)` 再 `water += leftMax - bins[left]`，差值天然 ≥ 0，钳位可以删掉（对比暴力法需要钳位）
+
+直观图像（双向灌水版；「图示」节的楼梯图正是灌出来的水面的定格照片）：
+
+ - 左指针相当于**从左边灌水**：水面滚到当前左边最高（`leftMax`），每前进一步就给脚下这列铺一层水、顺手把这根柱子自己减掉。右指针对称，从右边灌。
+ - **坝是全局最高柱**：前缀 max 只升不降，升到全局最高柱封顶，所以它左侧每一列的水都有这根墙在右边兜底，左灌的水面全是真水面；它右侧真水面更低，左灌的水会「漫回去」——**水流不过去的那边，就不归这边统计**。右灌对称。两边以全局最高柱为界，恰好把每列分工一次、不重叠。
+ - 于是**总水量 = 左灌面积 + 右灌面积 −（每根柱子恰好减一次）**。注意别误读成两边各扫全程再相加（那会把每列灌两次）；`bins[left] < bins[right]` 的分支判断，本质就是每步问一句「这列该轮到哪边灌」，两边交接的那列恰好落在全局最高柱上。
+ - 相遇列（全局最高柱自己）两边都不灌也不减：柱高 = 水面，头顶没水，加 0 减 0，账仍然平。
+
+三版谱系（同一个逐列模型，差别只在「另一个 max 什么时候才需要知道」）：
+
+```text
+暴力   ：每列现扫两个 max                     O(n²) / O(1)
+前后缀 ：先把两个 max 都存好再逐列算           O(n)  / O(n)
+双指针 ：只存"已确认"的 max，一边够高就当场结算  O(n)  / O(1)
+```
+
+## 思路
+- 主要的几段逻辑： left=0  right= count-1 while (left < right)  左右向中间遍历，相遇停止。
+
+  * if  (bins[left] < bins[right])  左侧灌水条件，向右方向 left++ 还未遇到最高柱子挡住水流
+  * else 右侧灌水条件，向左方向 right-- 还未遇到最高柱子挡住水流
+
+  * leftMax=std::max(leftMax, bins[left]) 当前的最高水位，显然是由左侧最高柱子挡住。  rightMax 同理
+
+  * water += leftMax - bins[left]  水位是踩着柱子的，累加水量时应当减去柱子体积。 右侧同理。
+
+```cpp
+int trappingWater_opt(const std::vector<int>& bins) {
+    int count = static_cast<int>(bins.size());
+    int water = 0;
+    int left = 0;
+    int right = count - 1;
+    int leftMax = 0;
+    int rightMax = 0;
+
+    while (left < right) {
+        if (bins[left] < bins[right]) {
+            leftMax = std::max(leftMax, bins[left]);
+            water += leftMax - bins[left];
+            left++;
+        } else {
+            rightMax = std::max(rightMax, bins[right]);
+            water += rightMax - bins[right];
+            right--;
+        }
+    }
+    return water;
+}
+
+```
+
+---
+
+# Binary Search
+
+## 题目
+
+**LeetCode 704 · 二分查找（Binary Search）· 简单**
+
+给定升序整数数组 `nums`（元素互不相同）和整数 `target`，若 `target` 存在返回其**下标**，否则返回 `-1`。
+
+要求：`O(log n)`。
+
+```text
+示例 1：nums = [-1,0,3,5,9,12], target = 9   输出 4
+示例 2：nums = [-1,0,3,5,9,12], target = 2   输出 -1
+```
+
+**数据范围**：`1 <= nums.length <= 10^4`，`-10^4 < nums[i], target < 10^4`，无重复元素。
+
+## 图示
+
+```text
+nums = [-1, 0, 3, 5, 9, 12]        target = 9
+
+每一步：量 mid，三种判决 —— 命中 / 答案在左半 / 答案在右半
+
+  [-1  0  3  5  9  12]             left=0      right=5
+   L        M              R       mid=2, nums[2]=3 < 9  → 去右半
+        [3  5  9  12]              left=3      right=5
+              M                    mid=4, nums[4]=9 == 9 → 命中，返回 4
+              LR
+```
+
+**写法只有一种（审讯模型）**：搜索区间 = 候选名单，闭区间 `[left, right]`。
+
+```text
+三路比较让 mid 当场结案：命中 return，没命中即拿到「≠ target」判决
+⇒ mid 必须离开名单（left=mid+1 / right=mid-1，不跨 = 原地死循环）
+while (left <= right) = 「名单上还有人」
+⇒ 审到空为止；等号专为最后 1 个候选（去掉穷举漏检 484 例）
+退出时 left > right，人人有判决 ⇒ return -1 理直气壮
+```
+
+本题 mid 不可能留作候选（不是答案就是命中），所以不存在别的组合。
+左闭右开 / 留住 mid / ceil 中点那套属于 34 类"找第一个/最后一个"的边界查找，遇到再看，此处不预支。
+
+## 思路
+ - 二分法，从中间开始找，大于目标值，下一步需向左查找，即右边界左移。
+ - 小于目标值，下一步需要向右查找，即左边界右移。
+ - 查找点用左右边界计算。
+
+## 解题心得
+ - 查找点是绝对索引，不是长度！应当 left + (right - left) / 2
+ - 移动左和右边界跨过上一轮的查找点。因为 mid 点已经检查过了，所以 left/right mid +-1 跳过。 
+ - while (left <= right) 循环 左右边界条件判定有关，为何？直觉是什么？“闭区间非空” 等号保证不会漏过检查点。
+ - 
+
+## 复杂度
+ - 空间：无额外存储分配 O(1)
+ - 时间：二分遍历 O(logn)
+
+```cpp
+
+int binarySearch(const std::vector<int>& nums, const int target) {
+    int count = static_cast<int>(nums.size());
+    int left = 0;
+    int right = count - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (target < nums[mid]) {
+            right = mid - 1;
+        } else if (target > nums[mid]) {
+            left = mid + 1;
+        } else {
+            return mid;
+        }
+    }
+    return -1;
+}
+
+```
+
+---
+
+# Search Insert Position
+
+## 题目
+
+**LeetCode 35 · 搜索插入位置（Search Insert Position）· 简单**
+
+给定升序数组 `nums`（**无重复**）和目标值 `target`，若存在返回其下标；否则返回它**按序插入时的下标**（即第一个 `≥ target` 的元素位置）。
+
+要求：`O(log n)`。
+
+```text
+示例 1：nums = [1,3,5,6], target = 5   输出 2   （命中）
+示例 2：nums = [1,3,5,6], target = 2   输出 1   （插在 3 前面）
+示例 3：nums = [1,3,5,6], target = 7   输出 4   （插在最后）
+```
+
+**数据范围**：`1 <= nums.length <= 10^4`，`0 <= nums[i] < 10^4`，无重复。
+
+## 图示
+
+```text
+示例 2：nums = [1,3,5,6], target = 2
+
+审讯全程（三件套与 704 完全相同，一字不改）：
+[left=0, right=3]  mid=1, 3>2 → right=0
+[left=0, right=0]  mid=0, 1<2 → left=1
+[left=1, right=0]  名单清空，散会
+
+所有人都有判决。此时 left=1 —— 它指着谁？这个位置对 target 而言意味着什么？
+（想清楚这个「？？」，本题就是改一个 return 的事；别查答案，用 [704退出时人人有判决] 推）
+```
+
+## 思路
+
+## 解题心得
+
+## 复杂度
+
+```cpp
+int searchInsertPos(const std::vector<int>& nums, const int target) {
+    int count = static_cast<int>(nums.size());
+    int left = 0;
+    int right = count - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) {
+            left = mid + 1;
+        } else if (nums[mid] > target) {
+            right = mid - 1;
+        } else {
+            return mid;
+        }
+    }
+    return left;
 }
 ```

@@ -1868,7 +1868,21 @@ x = 8，嫌疑名单是谁？—— 不是数组，是一段值域
 ```cpp
 
 int sqrtInt(int x) {
-    // 待默写
+    int left = 0;
+    int right = x;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        long long sqr = (long long)mid * mid;
+
+        if (sqr > x) {
+            right = mid - 1;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return right;
 }
 
 ```

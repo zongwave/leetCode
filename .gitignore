@@ -3,3 +3,25 @@
 *.exe
 *.pdb
 *.ilk
+# Visual Studio / MSVC build intermediates and temp files
+.vs/
+session-state/
+x64/
+Win32/
+Debug/
+Release/
+build/
+out/
+*.iobj
+*.ipdb
+*.tlog
+*.log
+*.recipe
+*.suo
+*.ipch
+*.vsidx
+*.user
+FileListAbsolute.txt
+*.obj.dt.d.json
+*.obj.dt.module.json
+*.obj.dt.module.json.command

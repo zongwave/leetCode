@@ -13,6 +13,7 @@
 | 3 | [Longest Substring Without Repeating Characters](#longest-substring) | 无重复字符的最长子串 | 滑动窗口 | 中等 |
 | 56 | [Merge Intervals](#merge-intervals) | 合并区间 | 排序 + 区间扫描 | 中等 |
 | 206 | [Reverse Linked List](#reverse-linked-list) | 反转链表 | 链表三指针 | 简单 |
+| 21 | [Merge Two Sorted Lists](#merge-two-sorted-lists) | 合并两个有序链表 | 链表（dummy 哨兵/递归） | 简单 |
 | 104 | [Maximum Depth of Binary Tree](#maximum-depth-of-binary-tree) | 二叉树的最大深度 | 二叉树 DFS | 简单 |
 | 226 | [Invert Binary Tree](#invert-binary-tree) | 翻转二叉树 | 二叉树 DFS | 简单 |
 | 199 | [Binary Tree Right Side View](#binary-tree-right-side-view) | 二叉树的右视图 | 二叉树层序 BFS | 中等 |
@@ -842,6 +843,110 @@ linkedList* reverseLinkedList(linkedList* list) {
 }
 
 ```
+
+# Merge Two Sorted Lists
+
+## 题目
+
+**LeetCode 21 · 合并两个有序链表（Merge Two Sorted Lists）· 简单**
+
+给定两个**升序**排列的单链表 `list1`、`list2`，将它们合并成一个新的升序链表并返回。新链表应通过拼接原有节点完成，**不新建节点**。
+
+```text
+list1:  1 -> 3 -> 5
+list2:  2 -> 4 -> 6
+merge:  1 -> 2 -> 3 -> 4 -> 5 -> 6
+
+list1:  []          list2:  [0]   ->  [0]
+list1:  []          list2:  []    ->  []
+```
+
+**数据范围**：两链表节点数均 `[0, 50]`，`-100 <= Node.val <= 100`，两个链表均已按升序排列。
+进阶：迭代与递归两种写法都要能默写；本题与 206 不同，需要 dummy 哨兵节点。
+
+## 图示
+
+每次取两个头里较小者接上去（下面用 a/b 指向两链表各自的当前位置，`cur` 挂在已合并的尾巴上）：
+
+```text
+dummy -> 1 -> 3 -> 5     a 走 1
+list2:  2 -> 4 -> 6      b 走 2
+
+S0  dummy(cur)  取 1：dummy->1, a 后移
+S1  取 2：1->2, b 后移
+S2  取 3：2->3, a 后移
+...
+循环结束时某一侧走空，把剩下那一整段直接接上
+```
+
+关键视角：**每次永远只取两个头里较小的那一个**，谁小谁走，另一头原地等着。这保证了结果天然升序，不用排序。
+
+两个最容易漏的坑：
+- **收尾**：循环结束后必有一侧链表还没走完，要把它整段接到 `cur->next`，否则后半段直接丢了。
+- **dummy 的作用**：合并结果的头节点可能是 `list1` 也可能是 `list2`，用一个 `dummy` 哨兵先占住位置，最后返回 `dummy->next`，省得单独判断"哪个才是新头"。
+
+## 思路
+- 迭代：`dummy` 哨兵开头，`cur` 指向新链尾；谁小接谁、谁的后继后移；循环结束把剩余整段接上。
+- 递归：返回值就是"合并好的头"；比较两节点，较小者接上"剩余部分合并的结果"。
+- 递归出口：`list1 == nullptr` 返回 `list2`；`list2 == nullptr` 返回 `list1`。
+
+## 复杂度
+- 迭代：时间 O(m+n)，空间 O(1)
+- 递归：时间 O(m+n)，空间 O(m+n)（递归调用栈）
+
+```cpp
+struct linkedList {
+    int value;
+    linkedList* next;
+
+    linkedList(int v) {
+        value = v;
+        next = nullptr;
+    }
+};
+
+// 迭代版：dummy 哨兵 + 尾指针
+linkedList* mergeTwoListsIter(linkedList* list1, linkedList* list2) {
+    if (list1 == nullptr) return list2;
+    if (list2 == nullptr) return list1;
+
+    linkedList* dummy = new linkedList(0);
+    linkedList* curr = dummy;
+
+    while (list1 != nullptr && list2 != nullptr) {
+        if (list1->value <= list2->value) {
+            curr->next = list1;
+            list1 = list1->next;
+        } else {
+            curr->next = list2;
+            list2 = list2->next;
+        }
+        curr = curr->next;
+    }
+    if (list1 != nullptr) curr->next = list1;
+    if (list2 != nullptr) curr->next = list2;
+
+    return dummy->next;
+}
+
+// 递归版：返回值就是合并好的头（留空待默写）
+linkedList* mergeTwoListsRec(linkedList* list1, linkedList* list2) {
+    // 三个组成：两个递归出口 + 谁小接谁（用 merge(...) 接上剩余部分）
+    if (list1 == nullptr) return list2;
+    if (list2 == nullptr) return list1;
+
+    if (list1->value < list2->value) {
+        list1->next = mergeTwoListsRec(list1->next, list2);
+        return list1;
+    } else {
+        list2->next = mergeTwoListsRec(list1, list2->next);
+        return list2;
+    }
+}
+
+```
+
+---
 
 # Maximum Depth of Binary Tree
 

@@ -1,0 +1,23 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25 },
+  "configurePresets": [
+    {
+      "name": "vs",
+      "displayName": "VS 生成器（任何终端可用，无需 Developer Shell）",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build/vs"
+    },
+    {
+      "name": "ninja",
+      "displayName": "Ninja Multi-Config（需 Developer Shell / ninja 在 PATH）",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/ninja"
+    }
+  ],
+  "buildPresets": [
+    { "name": "vs-debug", "configurePreset": "vs", "configuration": "Debug" },
+    { "name": "vs-release", "configurePreset": "vs", "configuration": "Release" },
+    { "name": "ninja-debug", "configurePreset": "ninja", "configuration": "Debug" }
+  ]
+}

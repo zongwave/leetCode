@@ -1,7 +1,7 @@
 // C++ Exercise Playground - dispatcher
 // 运行方式：
 //   1. 直接运行 -> 交互式菜单选择练习
-//   2. Playground.exe <exercise-name> [args...] -> 直接运行指定练习并透传参数
+//   2. cpp_playground.exe <exercise-name> [args...] -> 直接运行指定练习并透传参数
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     // 方式 2: 提供练习名则直接运行（并把后续参数透传给该练习）
     if (argc > 1) {
         if (const Exercise* e = find_exercise(argv[1])) {
-            return e->fn(argc, argv);
+            return e->fn(argc - 2, argv + 2);
         }
         std::cerr << "Unknown exercise: " << argv[1] << "\n";
         return 1;
@@ -61,5 +61,6 @@ int main(int argc, char* argv[]) {
         std::cerr << "Out of range.\n";
         return 1;
     }
-    return g_exercises[choice - 1].fn(argc, argv);
+    // 菜单路径：命令行上没有任何参数，传空列表（argv[argc] 是合法的 nullptr 收尾位）
+    return g_exercises[choice - 1].fn(0, argv + argc);
 }

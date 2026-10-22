@@ -28,87 +28,107 @@
 #include <memory>
 #include <string>
 
-class Base {
-public:
-	explicit Base(const std::string& name) : m_name(name) {
-		std::cout << "====== Base constructor called for: " << m_name << std::endl;
-		m_instance_count++;
-	}
-	virtual ~Base() {
-		std::cout << "~~~~~~ ~Base destructor called for: " << m_name << std::endl;
-		m_instance_count--;
+namespace VirtualAbs {
+
+	class Base {
+	public:
+		explicit Base(const std::string& name) : m_name(name) {
+			std::cout << "====== Base constructor called for: " << m_name << std::endl;
+			s_instance_count++;
+		}
+		virtual ~Base() {
+			std::cout << "~~~~~~ ~Base destructor called for: " << m_name << std::endl;
+			s_instance_count--;
+		}
+
+		Base(const Base&) = delete;
+		Base& operator=(const Base&) = delete;
+
+		void setName(const std::string& name) {
+			m_name = name;
+			std::cout << "SetName: " << m_name << ", instance count: " << s_instance_count << std::endl;
+		}
+
+		virtual void describe() const = 0; // 纯虚函数，派生类必须实现
+
+	protected:
+		const std::string& getName() const {
+			return m_name;
+		}
+
+	    static int s_instance_count;
+
+	private:
+		std::string m_name;
 	};
 
-	Base(const Base&) = delete;
-	Base& operator=(const Base&) = delete;
-
-	const std::string& getName() const {
-		return m_name;
-	}
-
-	void setName(const std::string& name) {
-		m_name = name;
-		std::cout << "SetName: " << m_name << ", instance count: " << m_instance_count << std::endl;
-	}
-
-protected:
-	static int m_instance_count;
-
-private:
-	std::string m_name;
-};
-
-int Base::m_instance_count = 0;
+	int Base::s_instance_count = 0;
 
 
-class Derived : public Base {
-public:
-	explicit Derived(const std::string& name) : Base(name) {
-		std::cout << "====== Derived constructor called for: " << getName() << std::endl;
-	}
+	class Derived : public Base {
+	public:
+		explicit Derived(const std::string& name) : Base(name) {
+			std::cout << "====== Derived constructor called for: " << getName() << std::endl;
+		}
 
-	~Derived() override {
-		std::cout << "~~~~~~ ~Derived destructor called for: " << getName() << std::endl;
-	}
-};
+		~Derived() override {
+			std::cout << "~~~~~~ ~Derived destructor called for: " << getName() << std::endl;
+		}
+
+		void describe() const override {
+			std::cout << "Derived class: " << getName() << std::endl;
+		}
+	};
 
 
-class AnotherDerived : public Base {
-public:
-	explicit AnotherDerived(const std::string& name) : Base(name) {
-		std::cout << "====== AnotherDerived constructor called for: " << getName() << std::endl;
-	}
+	class AnotherDerived : public Base {
+	public:
+		explicit AnotherDerived(const std::string& name) : Base(name) {
+			std::cout << "====== AnotherDerived constructor called for: " << getName() << std::endl;
+		}
 
-	~AnotherDerived() override {
-		std::cout << "~~~~~~ ~AnotherDerived destructor called for: " << getName() << std::endl;
-	}
-};
+		~AnotherDerived() override {
+			std::cout << "~~~~~~ ~AnotherDerived destructor called for: " << getName() << std::endl;
+		}
 
+		void describe() const override {
+			std::cout << "AnotherDerived class: " << getName() << std::endl;
+		}
+	};
+
+}
+
+using namespace VirtualAbs;
 
 int run_abstract_class(int argc, char* argv[]) {
 	(void)argc;
 	(void)argv;
 	// make_unique 创建对象并由 unique_ptr 管理；以基类接口持有派生类对象。
 	std::unique_ptr<Base> obj1 = std::make_unique<Derived>("Derived Object");
-	std::cout << "obj1->getName(): " << obj1->getName() << std::endl;
+	std::cout << "obj1 describe: ";
+	obj1->describe();
 
 	obj1->setName("Derived Object 1");
-	std::cout << "obj1->getName(): " << obj1->getName() << std::endl;
+	std::cout << "obj1 describe: ";
+	obj1->describe();
 
 	// auto 推导为 std::unique_ptr<AnotherDerived>，对象离开作用域时自动释放。
 	auto obj2 = std::make_unique<AnotherDerived>("Another Derived Object");
-	std::cout << "obj2->getName(): " << obj2->getName() << std::endl;
+	std::cout << "obj2 describe: ";
+	obj2->describe();
 
 	// 原始基类指针管理动态对象；必须在适当位置手动 delete。
 	Base* obj3 = new Derived("Derived Object 2");
-	std::cout << "obj3->getName(): " << obj3->getName() << std::endl;
-
+	std::cout << "obj3 describe: ";
+	obj3->describe();
 
 	obj1.reset();
 
-	std::cout << "obj2->getName(): " << obj2->getName() << std::endl;
+	std::cout << "obj2 describe: ";
+	obj2->describe();
 
 	delete obj3;
 
 	return 0;
 }
+

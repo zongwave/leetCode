@@ -10,6 +10,9 @@
 // 各练习的入口函数声明（新练习在此声明 + 在 g_exercises 表中注册）
 int run_hello(int argc, char* argv[]);
 int run_abstract_class(int argc, char* argv[]);
+int run_smart_pointer(int argc, char* argv[]);
+int run_move_semantics(int argc, char* argv[]);
+int run_templates(int argc, char* argv[]);
 
 struct Exercise {
     const char* name;
@@ -20,6 +23,9 @@ struct Exercise {
 static const std::vector<Exercise> g_exercises = {
     {"hello",          "Sample playground entry point",       run_hello},
     {"abstract_class", "Abstract class & virtual functions",  run_abstract_class},
+    {"smart_pointer",  "RAII & smart pointers (unique/shared/weak)", run_smart_pointer},
+    {"move_semantics", "Move semantics & perfect forwarding (rule of five)", run_move_semantics},
+    {"templates",        "Templates & specialization (SFINAE / fold)", run_templates},
 };
 
 static const Exercise* find_exercise(const std::string& name) {
